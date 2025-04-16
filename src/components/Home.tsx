@@ -25,7 +25,7 @@ interface TruckData {
       start: Date;
       end: Date;
     }>;
-    material_building: Array<{
+    material_handling: Array<{
       start: Date;
       end: Date;
     }>;
@@ -43,7 +43,10 @@ export default function Home() {
   const [operators, setOperators] = useState<UserData[]>([]);
   const [trucks, setTrucks] = useState<TruckData[]>([]);
   const [isAddTruckModalOpen, setIsAddTruckModalOpen] = useState(false);
-  const [showFinished, setShowFinished] = useState(true);
+  const [showFinished, setShowFinished] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<{
+    [key: string]: boolean;
+  }>({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -184,83 +187,243 @@ export default function Home() {
                 <div className="space-y-4">
                   {Object.entries(truck.timestamps).map(
                     ([checkpoint, data], index, entries) => {
-                      const times = Array.isArray(data) ? data[0] : data;
+                      const isExpandable = [
+                        "entry_gate",
+                        "front_office",
+                        "weigh_bridge",
+                      ].includes(checkpoint);
+                      const isExpanded =
+                        expandedSections[
+                          `${truck.trackingNumber}-${checkpoint}`
+                        ];
                       const isOperatorCheckpoint =
                         user.role === "operator" &&
                         user.checkPointAssigned.toString() === checkpoint;
-                      const previousCheckpoint =
-                        index > 0 ? entries[index - 1][1] : null;
-                      const isPreviousCompleted =
-                        index === 0 ||
-                        (previousCheckpoint && previousCheckpoint[0]?.end);
+                      let hasDependency = false;
                       return (
                         <div
                           key={checkpoint}
                           className={`border-t pt-4 ${
                             isOperatorCheckpoint
-                              ? "bg-yellow-50 rounded-lg p-3"
+                              ? "bg-yellow-50 rounded-lg"
                               : ""
                           }`}
                         >
                           <div className="flex justify-between items-center mb-2">
-                            <h4
-                              className={`text-sm font-medium capitalize ${
-                                isOperatorCheckpoint
-                                  ? "text-yellow-700"
-                                  : "text-gray-700"
+                            <div className="flex items-center gap-2">
+                              {isExpandable && (
+                                <button
+                                  onClick={() =>
+                                    setExpandedSections((prev) => ({
+                                      ...prev,
+                                      [`${truck.trackingNumber}-${checkpoint}`]: !prev[
+                                        `${truck.trackingNumber}-${checkpoint}`
+                                      ],
+                                    }))
+                                  }
+                                  className="text-white"
+                                >
+                                  <svg
+                                    className={`w-4 h-4 transform transition-transform ${
+                                      isExpanded ? "rotate-90" : ""
+                                    }`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9 5l7 7-7 7"
+                                    />
+                                  </svg>
+                                </button>
+                              )}
+                              <h4
+                                className={`text-sm font-medium capitalize ${
+                                  isOperatorCheckpoint
+                                    ? "text-yellow-700"
+                                    : "text-gray-700"
+                                }`}
+                              >
+                                {checkpoint.replace("_", " ")}
+                              </h4>
+                            </div>
+                          </div>
+                          {isExpandable ? (
+                            <div
+                              className={`space-y-3 ${
+                                isExpanded ? "" : "hidden"
                               }`}
                             >
-                              {checkpoint.replace("_", " ")}
-                            </h4>
-                            {isOperatorCheckpoint && (
-                              <button
-                                onClick={() =>
-                                  handleUpdateTimestamp(
-                                    truck.trackingNumber,
-                                    checkpoint
-                                  )
-                                }
-                                disabled={!isPreviousCompleted}
-                                className={`px-3 py-1 rounded text-sm font-medium ${
-                                  isPreviousCompleted
-                                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                }`}
-                              >
-                                Update
-                              </button>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                              <span
-                                className={`${
-                                  isOperatorCheckpoint
-                                    ? "text-yellow-900"
-                                    : "text-gray-500"
-                                }`}
-                              >
-                                Start:{" "}
-                              </span>
-                              <span>
-                                {new Date(times?.start).toLocaleString()}
-                              </span>
+                              <div className="bg-gray-50 p-3 rounded-lg">
+                                <h5 className="text-sm font-medium text-gray-700 mb-2">
+                                  Incoming
+                                </h5>
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                  <div>
+                                    <span
+                                      className={`${
+                                        isOperatorCheckpoint
+                                          ? "text-yellow-900"
+                                          : "text-gray-500"
+                                      }`}
+                                    >
+                                      Start:{" "}
+                                    </span>
+                                    <span>
+                                      {!hasDependency &&
+                                      !data[0] &&
+                                      user.checkPointAssigned.toString() ==
+                                        checkpoint &&
+                                      (hasDependency = true) ? (
+                                        <button className="text-white bg-green-600">
+                                          Update log
+                                        </button>
+                                      ) : (
+                                        new Date(
+                                          data[0]?.start
+                                        ).toLocaleString()
+                                      )}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span
+                                      className={`${
+                                        isOperatorCheckpoint
+                                          ? "text-yellow-600"
+                                          : "text-gray-500"
+                                      }`}
+                                    >
+                                      End:{" "}
+                                    </span>
+                                    <span>
+                                      {!hasDependency &&
+                                      !data[0] &&
+                                      user.checkPointAssigned.toString() ==
+                                        checkpoint &&
+                                      (hasDependency = true) ? (
+                                        <button className="text-white bg-green-600">
+                                          Update log
+                                        </button>
+                                      ) : (
+                                        new Date(data[0]?.end).toLocaleString()
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="bg-gray-50 p-3 rounded-lg">
+                                <h5 className="text-sm font-medium text-gray-700 mb-2">
+                                  Returning
+                                </h5>
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                  <div>
+                                    <span
+                                      className={`${
+                                        isOperatorCheckpoint
+                                          ? "text-yellow-900"
+                                          : "text-gray-500"
+                                      }`}
+                                    >
+                                      Start:{" "}
+                                    </span>
+                                    <span>
+                                      {!hasDependency &&
+                                      !data[1] &&
+                                      user.checkPointAssigned.toString() ==
+                                        checkpoint &&
+                                      (hasDependency = true) ? (
+                                        <button className="text-white bg-green-600">
+                                          Update log
+                                        </button>
+                                      ) : (
+                                        new Date(
+                                          data[1]?.start
+                                        ).toLocaleString()
+                                      )}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span
+                                      className={`${
+                                        isOperatorCheckpoint
+                                          ? "text-yellow-600"
+                                          : "text-gray-500"
+                                      }`}
+                                    >
+                                      End:{" "}
+                                    </span>
+                                    <span>
+                                      {!hasDependency &&
+                                      !data[1] &&
+                                      user.checkPointAssigned.toString() ==
+                                        checkpoint &&
+                                      (hasDependency = true) ? (
+                                        <button className="text-white bg-green-600">
+                                          Update log
+                                        </button>
+                                      ) : (
+                                        new Date(data[1]?.end).toLocaleString()
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                            <div>
-                              <span
-                                className={`${
-                                  isOperatorCheckpoint
-                                    ? "text-yellow-600"
-                                    : "text-gray-500"
-                                }`}
-                              >
-                                End:{" "}
-                              </span>
-                              <span>
-                                {new Date(times?.end).toLocaleString()}
-                              </span>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span
+                                  className={`${
+                                    isOperatorCheckpoint
+                                      ? "text-yellow-900"
+                                      : "text-gray-500"
+                                  }`}
+                                >
+                                  Start:{" "}
+                                </span>
+                                <span>
+                                  {!hasDependency &&
+                                  !data[0] &&
+                                  user.checkPointAssigned.toString() ==
+                                    checkpoint &&
+                                  (hasDependency = true) ? (
+                                    <button className="text-white bg-green-600">
+                                      Update log
+                                    </button>
+                                  ) : (
+                                    new Date(data[0]?.start).toLocaleString()
+                                  )}
+                                </span>
+                              </div>
+                              <div>
+                                <span
+                                  className={`${
+                                    isOperatorCheckpoint
+                                      ? "text-yellow-600"
+                                      : "text-gray-500"
+                                  }`}
+                                >
+                                  End:{" "}
+                                </span>
+                                <span>
+                                  {!hasDependency &&
+                                  !data[0] &&
+                                  user.checkPointAssigned.toString() ==
+                                    checkpoint &&
+                                  (hasDependency = true) ? (
+                                    <button className="text-white bg-green-600">
+                                      Update log
+                                    </button>
+                                  ) : (
+                                    new Date(data[0]?.end).toLocaleString()
+                                  )}
+                                </span>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       );
                     }
