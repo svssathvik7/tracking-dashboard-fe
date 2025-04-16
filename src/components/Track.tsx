@@ -86,12 +86,13 @@ export default function Track() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-8 max-w-7xl">
+    <div className="w-screen overflow-x-hidden p-2">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Track Trucks</h1>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Switch
+              className="bg-amber-300"
               id="show-finished"
               checked={showFinished}
               onCheckedChange={setShowFinished}
@@ -101,7 +102,7 @@ export default function Track() {
         </div>
       </div>
 
-      <div className="relative">
+      <div className="relative w-full max-w-3xl mx-auto">
         <Input
           type="text"
           placeholder="Search by Tracking Number"
@@ -112,8 +113,8 @@ export default function Track() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
                 <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
@@ -125,7 +126,7 @@ export default function Track() {
           ))}
         </div>
       ) : filteredTrucks.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-12 w-full max-w-3xl mx-auto">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
             <Truck className="h-8 w-8 text-gray-500" />
           </div>
@@ -137,7 +138,7 @@ export default function Track() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {filteredTrucks.map((truck: any) => (
             <Card
               key={truck.trackingNumber}
@@ -277,6 +278,7 @@ export default function Track() {
         </div>
       )}
 
+      {/* <div className=\"container mx-auto px-4 py-6 space-y-8 max-w-7xl\"> */}
       <Card className="mt-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
