@@ -1,24 +1,38 @@
 import axios from "axios";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../constants";
-import { useUserStore } from "../store/userStore";
+import api from "../utils/api";
+
+export enum CheckPoints {
+  entry_gate,
+  front_office,
+  weigh_bridge,
+  qc,
+  material_handling,
+  none,
+}
+
+export interface UserData {
+  email: string;
+  name: string;
+  password: string;
+  role: string;
+  checkPointAssigned: CheckPoints;
+}
 
 export default function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const setUser = useUserStore((state) => state.setUser);
 
   const handleLogin = async () => {
     try {
-      const response = (
-        await axios.post(`${BACKEND_URL}/auth/login`, { email, password })
-      ).data;
-      setUser({
-        name: response.name,
-        email: response.email,
-        role: response.role,
-        checkPointAssigned: response.checkPointAssigned,
-      });
+      const response: UserData = (
+        await api.post(`/auth/login`, { email, password })
+      ).data.data;
+      localStorage.setItem("userEmail", response.email);
+      navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
       return;
