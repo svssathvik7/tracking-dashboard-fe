@@ -4,8 +4,10 @@ import { getUserDetails } from "../utils/getuserDetails";
 import api from "../utils/api";
 import AddTruckModal from "./AddTruckModal";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface TruckData {
+  currentStage: number;
   finished: boolean;
   trackingNumber: string;
   timestamps: {
@@ -47,7 +49,9 @@ export default function Home() {
   const [expandedSections, setExpandedSections] = useState<{
     [key: string]: boolean;
   }>({});
+  const [refetch, setRefetch] = useState(false);
   const navigate = useNavigate();
+  const [it, setIt] = useState(0);
 
   useEffect(() => {
     const userEmail = localStorage.getItem("userEmail");
@@ -67,8 +71,9 @@ export default function Home() {
         console.error("Failed to fetch data:", error);
       }
     };
+    setIt(0);
     fetch();
-  }, []);
+  }, [refetch]);
 
   const handleStatusToggle = async (
     trackingNumber: string,
@@ -91,6 +96,25 @@ export default function Home() {
   const handleLogout = () => {
     localStorage.removeItem("userEmail");
     navigate("/login");
+  };
+
+  const handleUpdate = async (
+    trackingNumber: string,
+    checkpoint: string,
+    index: number,
+    isStart: boolean
+  ) => {
+    const response = (
+      await api.post("/track/update", {
+        trackingNumber,
+        checkpoint,
+        index,
+        isStart,
+      })
+    ).data;
+    console.log("Update tracking repsone ", response);
+    setRefetch(!refetch);
+    return;
   };
 
   return (
@@ -199,7 +223,6 @@ export default function Home() {
                       const isOperatorCheckpoint =
                         user.role === "operator" &&
                         user.checkPointAssigned.toString() === checkpoint;
-                      let hasDependency = false;
                       return (
                         <div
                           key={checkpoint}
@@ -273,12 +296,20 @@ export default function Home() {
                                       Start:{" "}
                                     </span>
                                     <span>
-                                      {!hasDependency &&
-                                      !data[0] &&
+                                      {truck.currentStage == 4 * index &&
                                       user.checkPointAssigned.toString() ==
-                                        checkpoint &&
-                                      (hasDependency = true) ? (
-                                        <button className="text-white bg-green-600">
+                                        checkpoint ? (
+                                        <button
+                                          onClick={() => {
+                                            handleUpdate(
+                                              truck.trackingNumber,
+                                              checkpoint,
+                                              0,
+                                              true
+                                            );
+                                          }}
+                                          className="text-white bg-green-600"
+                                        >
                                           Update log
                                         </button>
                                       ) : (
@@ -299,12 +330,20 @@ export default function Home() {
                                       End:{" "}
                                     </span>
                                     <span>
-                                      {!hasDependency &&
-                                      !data[0] &&
+                                      {truck.currentStage == 4 * index + 1 &&
                                       user.checkPointAssigned.toString() ==
-                                        checkpoint &&
-                                      (hasDependency = true) ? (
-                                        <button className="text-white bg-green-600">
+                                        checkpoint ? (
+                                        <button
+                                          onClick={() => {
+                                            handleUpdate(
+                                              truck.trackingNumber,
+                                              checkpoint,
+                                              0,
+                                              false
+                                            );
+                                          }}
+                                          className="text-white bg-green-600"
+                                        >
                                           Update log
                                         </button>
                                       ) : (
@@ -330,12 +369,20 @@ export default function Home() {
                                       Start:{" "}
                                     </span>
                                     <span>
-                                      {!hasDependency &&
-                                      !data[1] &&
+                                      {truck.currentStage == 4 * index + 2 &&
                                       user.checkPointAssigned.toString() ==
-                                        checkpoint &&
-                                      (hasDependency = true) ? (
-                                        <button className="text-white bg-green-600">
+                                        checkpoint ? (
+                                        <button
+                                          onClick={() => {
+                                            handleUpdate(
+                                              truck.trackingNumber,
+                                              checkpoint,
+                                              1,
+                                              true
+                                            );
+                                          }}
+                                          className="text-white bg-green-600"
+                                        >
                                           Update log
                                         </button>
                                       ) : (
@@ -356,12 +403,20 @@ export default function Home() {
                                       End:{" "}
                                     </span>
                                     <span>
-                                      {!hasDependency &&
-                                      !data[1] &&
+                                      {truck.currentStage == 4 * index + 3 &&
                                       user.checkPointAssigned.toString() ==
-                                        checkpoint &&
-                                      (hasDependency = true) ? (
-                                        <button className="text-white bg-green-600">
+                                        checkpoint ? (
+                                        <button
+                                          onClick={() => {
+                                            handleUpdate(
+                                              truck.trackingNumber,
+                                              checkpoint,
+                                              1,
+                                              false
+                                            );
+                                          }}
+                                          className="text-white bg-green-600"
+                                        >
                                           Update log
                                         </button>
                                       ) : (
@@ -385,12 +440,22 @@ export default function Home() {
                                   Start:{" "}
                                 </span>
                                 <span>
-                                  {!hasDependency &&
-                                  !data[0] &&
+                                  {(index == 3
+                                    ? truck.currentStage == 4 * index
+                                    : truck.currentStage == 3 * index + 2) &&
                                   user.checkPointAssigned.toString() ==
-                                    checkpoint &&
-                                  (hasDependency = true) ? (
-                                    <button className="text-white bg-green-600">
+                                    checkpoint ? (
+                                    <button
+                                      onClick={() => {
+                                        handleUpdate(
+                                          truck.trackingNumber,
+                                          checkpoint,
+                                          0,
+                                          true
+                                        );
+                                      }}
+                                      className="text-white bg-green-600"
+                                    >
                                       Update log
                                     </button>
                                   ) : (
@@ -409,12 +474,22 @@ export default function Home() {
                                   End:{" "}
                                 </span>
                                 <span>
-                                  {!hasDependency &&
-                                  !data[0] &&
+                                  {(index == 3
+                                    ? truck.currentStage == 4 * index + 1
+                                    : truck.currentStage == 3 * index + 3) &&
                                   user.checkPointAssigned.toString() ==
-                                    checkpoint &&
-                                  (hasDependency = true) ? (
-                                    <button className="text-white bg-green-600">
+                                    checkpoint ? (
+                                    <button
+                                      onClick={() => {
+                                        handleUpdate(
+                                          truck.trackingNumber,
+                                          checkpoint,
+                                          0,
+                                          false
+                                        );
+                                      }}
+                                      className="text-white bg-green-600"
+                                    >
                                       Update log
                                     </button>
                                   ) : (
