@@ -4,7 +4,7 @@ import Login from "./components/Login";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Track from "./components/Track";
-
+import { Toaster } from "sonner";
 function App() {
   return (
     <BrowserRouter>
@@ -14,6 +14,7 @@ function App() {
         <Route path="/track" element={<Track />} />
       </Routes>
       <Navbar />
+      <Toaster />
     </BrowserRouter>
   );
 }

@@ -1,5 +1,21 @@
+"use client";
+
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Truck, Loader2 } from "lucide-react";
+import { Toaster } from "@/components/ui/sonner";
 import api from "../utils/api";
+import { toast } from "sonner";
 
 interface AddTruckModalProps {
   isOpen: boolean;
@@ -8,51 +24,70 @@ interface AddTruckModalProps {
 
 export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
   const [truckName, setTruckName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     if (!truckName.trim()) {
-      alert("Please enter a truck name");
+      toast("Please enter a valid truck name");
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await api.post(`/track/add-truck/${truckName}`);
+      toast(`Truck ${truckName} has been created successfully`);
       setTruckName("");
       onClose();
     } catch (error) {
       console.error("Failed to create truck:", error);
-      alert("Failed to create truck. Please try again.");
+      toast("Failed to create truck. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">Add New Truck</h2>
-        <input
-          type="text"
-          value={truckName}
-          onChange={(e) => setTruckName(e.target.value)}
-          placeholder="Enter truck name"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black mb-4"
-        />
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
-          >
-            Create Entry
-          </button>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Truck className="h-5 w-5" />
+            Add New Truck
+          </DialogTitle>
+          <DialogDescription>
+            Enter the truck details to create a new tracking entry
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="truck-name">Truck Name/ID</Label>
+            <Input
+              id="truck-name"
+              type="text"
+              value={truckName}
+              onChange={(e) => setTruckName(e.target.value)}
+              placeholder="Enter truck name or ID"
+              className="w-full"
+              autoComplete="off"
+            />
+          </div>
         </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Entry"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
