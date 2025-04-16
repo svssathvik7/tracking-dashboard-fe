@@ -21,14 +21,14 @@ interface TruckData {
       start: Date;
       end: Date;
     }>;
-    qc: {
+    qc: Array<{
       start: Date;
       end: Date;
-    };
-    material_building: {
+    }>;
+    material_building: Array<{
       start: Date;
       end: Date;
-    };
+    }>;
   };
 }
 
@@ -183,22 +183,79 @@ export default function Home() {
                 </div>
                 <div className="space-y-4">
                   {Object.entries(truck.timestamps).map(
-                    ([checkpoint, data]) => {
+                    ([checkpoint, data], index, entries) => {
                       const times = Array.isArray(data) ? data[0] : data;
+                      const isOperatorCheckpoint =
+                        user.role === "operator" &&
+                        user.checkPointAssigned.toString() === checkpoint;
+                      const previousCheckpoint =
+                        index > 0 ? entries[index - 1][1] : null;
+                      const isPreviousCompleted =
+                        index === 0 ||
+                        (previousCheckpoint && previousCheckpoint[0]?.end);
                       return (
-                        <div key={checkpoint} className="border-t pt-4">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2 capitalize">
-                            {checkpoint.replace("_", " ")}
-                          </h4>
+                        <div
+                          key={checkpoint}
+                          className={`border-t pt-4 ${
+                            isOperatorCheckpoint
+                              ? "bg-yellow-50 rounded-lg p-3"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex justify-between items-center mb-2">
+                            <h4
+                              className={`text-sm font-medium capitalize ${
+                                isOperatorCheckpoint
+                                  ? "text-yellow-700"
+                                  : "text-gray-700"
+                              }`}
+                            >
+                              {checkpoint.replace("_", " ")}
+                            </h4>
+                            {isOperatorCheckpoint && (
+                              <button
+                                onClick={() =>
+                                  handleUpdateTimestamp(
+                                    truck.trackingNumber,
+                                    checkpoint
+                                  )
+                                }
+                                disabled={!isPreviousCompleted}
+                                className={`px-3 py-1 rounded text-sm font-medium ${
+                                  isPreviousCompleted
+                                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                }`}
+                              >
+                                Update
+                              </button>
+                            )}
+                          </div>
                           <div className="grid grid-cols-2 gap-2 text-sm">
                             <div>
-                              <span className="text-gray-500">Start: </span>
+                              <span
+                                className={`${
+                                  isOperatorCheckpoint
+                                    ? "text-yellow-900"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                Start:{" "}
+                              </span>
                               <span>
                                 {new Date(times?.start).toLocaleString()}
                               </span>
                             </div>
                             <div>
-                              <span className="text-gray-500">End: </span>
+                              <span
+                                className={`${
+                                  isOperatorCheckpoint
+                                    ? "text-yellow-600"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                End:{" "}
+                              </span>
                               <span>
                                 {new Date(times?.end).toLocaleString()}
                               </span>
