@@ -1,16 +1,26 @@
 import axios from "axios";
 import { useState } from "react";
 import { BACKEND_URL } from "../constants";
+import { useUserStore } from "../store/userStore";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const setUser = useUserStore((state) => state.setUser);
+
   const handleLogin = async () => {
     try {
-      const response = (await axios.post(`${BACKEND_URL}/login`)).data;
-      console.log("Loggin successfull ", response);
+      const response = (
+        await axios.post(`${BACKEND_URL}/auth/login`, { email, password })
+      ).data;
+      setUser({
+        name: response.name,
+        email: response.email,
+        role: response.role,
+        checkPointAssigned: response.checkPointAssigned,
+      });
     } catch (error) {
-      console.log(error);
+      console.error("Login failed:", error);
       return;
     }
   };
