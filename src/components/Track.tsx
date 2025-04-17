@@ -47,6 +47,7 @@ export default function Track() {
       try {
         const response = await api.get("/track/get-all-trucks");
         setTrucks(response.data.data);
+        console.log(response.data.data);
       } catch (error) {
         console.error("Failed to fetch trucks:", error);
       } finally {
@@ -69,19 +70,22 @@ export default function Track() {
       "weigh_bridge",
       "qc",
       "material_handling",
+      "weigh_bridge_return",
+      "front_office_return",
+      "entry_gate_return",
     ];
     const averages = checkpoints.map((checkpoint) => {
-      const times = trucks.flatMap((truck: any) =>
-        truck.timestamps[checkpoint].map((timestamp: any) => {
+      const times = trucks.map((truck: any) => {
+        const timestamp = truck.timestamps[checkpoint];
+        if (timestamp && timestamp.start && timestamp.end) {
           const start = new Date(timestamp.start);
           const end = new Date(timestamp.end);
           if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
             return (end.getTime() - start.getTime()) / 1000; // convert to seconds
-          } else {
-            return 0;
           }
-        })
-      );
+        }
+        return 0;
+      });
       const total = times.reduce((acc: any, time: any) => acc + time, 0);
       return times.length > 0 ? total / times.length : 0;
     });
@@ -94,6 +98,9 @@ export default function Track() {
     "Weigh Bridge",
     "Quality Control",
     "Material Handling",
+    "Weigh Bridge Return",
+    "Front Office Return",
+    "Entry Gate Return",
   ];
 
   const getProgressPercentage = (currentStage: number) => {
