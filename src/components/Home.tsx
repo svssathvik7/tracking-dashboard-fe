@@ -11,18 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import {
-  ChevronDown,
-  ChevronRight,
-  LogOut,
-  Plus,
-  Truck,
-  Users,
-  CheckCircle,
-  Clock,
-} from "lucide-react";
+import { Plus, Truck, Users, CheckCircle, Clock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -292,7 +281,7 @@ export default function Home() {
       )}
 
       <div className="mx-2 p-2 overflow-y-scroll max-h-full min-h-[60dvh]">
-        <CardHeader className="flex flex-col md:flex-row items-center justify-between pb-2">
+        <CardHeader className="flex flex-col md:flex-row items-center justify-between pb-2 ">
           <div>
             <p className="text-3xl font-bold tracking-tight flex items-center justify-start">
               Truck Tracking
@@ -337,9 +326,9 @@ export default function Home() {
             </button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {[1, 2, 3].map((i) => (
                 <Card key={i} className="animate-pulse">
                   <CardContent className="p-4">
@@ -356,7 +345,7 @@ export default function Home() {
                 ? true
                 : truck.finished === (filterStatus === "completed")
             ).length === 0 ? (
-            <div className="text-center py-8">
+            <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                 <Truck className="h-8 w-8 text-gray-500" />
               </div>
@@ -391,7 +380,7 @@ export default function Home() {
                       }));
                     }}
                   >
-                    <CardHeader className="pb-2">
+                    <CardHeader className="">
                       <div className="flex justify-between items-start">
                         <div>
                           <CardTitle className="text-lg">
@@ -427,7 +416,7 @@ export default function Home() {
                     </CardHeader>
                     <CardContent>
                       {expandedSections[truck.trackingNumber] && (
-                        <div className="mt-4 space-y-3 animate-in fade-in-50 slide-in-from-top-5 duration-300 overflow-y-scroll max-h-56">
+                        <div className="mt-4 space-y-3 animate-in fade-in-50 slide-in-from-top-5 duration-300 overflow-y-scroll max-h-[80dvh]">
                           {Object.entries(truck.timestamps).map(
                             (checkpoint, index) => {
                               const isOperatorCheckpoint =
