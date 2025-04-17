@@ -49,6 +49,7 @@ interface TruckData {
   currentStage: number;
   finished: boolean;
   trackingNumber: string;
+  details: Record<string, any>;
   timestamps: {
     entry_gate: {
       start: Date;
@@ -559,6 +560,31 @@ export default function Home() {
                           )}
                         </div>
                       )}
+                      {truck.details &&
+                        Object.entries(truck.details).length > 0 && (
+                          <div className="mt-3 border-t pt-3">
+                            <h4 className="text-sm font-medium mb-2">
+                              Additional Details
+                            </h4>
+                            <div className="grid gap-2">
+                              {Object.entries(truck.details).map(
+                                ([key, value]) => (
+                                  <div
+                                    key={key}
+                                    className="flex justify-between items-center text-sm"
+                                  >
+                                    <span className="font-medium capitalize">
+                                      {key}:
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                      {value}
+                                    </span>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
                     </CardContent>
                   </Card>
                 ))}
