@@ -246,7 +246,7 @@ export default function Track() {
                         className="h-2 w-16"
                       />
                       <span className="text-sm font-medium">
-                        {truck.currentStage + 1}/{2 * checkpoints.length}
+                        {truck.currentStage}/{2 * checkpoints.length}
                       </span>
                     </div>
                   </div>
