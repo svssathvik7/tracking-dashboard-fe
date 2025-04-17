@@ -101,6 +101,7 @@ export default function Home() {
 
         const trucksResponse = await api.get("/track/get-all-trucks");
         setTrucks(trucksResponse.data.data);
+        console.log("Trucks ", trucksResponse.data.data);
 
         if (userData.role === "admin") {
           const operatorsResponse = await api.get("/users/get-all-operators");
@@ -376,40 +377,18 @@ export default function Home() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <button
-                        onClick={() =>
-                          setExpandedSections((prev) => ({
-                            ...prev,
-                            [truck.trackingNumber]: !prev[truck.trackingNumber],
-                          }))
-                        }
-                        className="flex items-center justify-between w-full py-2 text-sm font-medium text-left text-gray-700 hover:text-gray-900 transition-colors"
-                      >
-                        <span className="text-white">Checkpoint Details</span>
-                        {expandedSections[truck.trackingNumber] ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4" />
-                        )}
-                      </button>
-
                       {expandedSections[truck.trackingNumber] && (
                         <div className="mt-4 space-y-3 animate-in fade-in-50 slide-in-from-top-5 duration-300 overflow-y-scroll max-h-56">
                           {Object.entries(truck.timestamps).map(
-                            ([checkpoint, data], index) => {
-                              const isExpandable = [
-                                "entry_gate",
-                                "front_office",
-                                "weigh_bridge",
-                              ].includes(checkpoint);
+                            (checkpoint, index) => {
                               const isOperatorCheckpoint =
                                 user.role === "operator" &&
                                 user.checkPointAssigned.toString() ===
-                                  checkpoint;
+                                  checkpoint[0];
 
                               return (
                                 <div
-                                  key={checkpoint}
+                                  key={checkpoint[0]}
                                   className={cn(
                                     "border rounded-lg overflow-hidden",
                                     isOperatorCheckpoint
@@ -428,32 +407,9 @@ export default function Home() {
                                         )}
                                       >
                                         {formatCheckpointName(
-                                          checkpoint.toString()
+                                          checkpoint[0].toString()
                                         )}
                                       </h4>
-                                      {isExpandable && (
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 w-8 p-0"
-                                          onClick={() =>
-                                            setExpandedSections((prev) => ({
-                                              ...prev,
-                                              [`${truck.trackingNumber}-${checkpoint}`]: !prev[
-                                                `${truck.trackingNumber}-${checkpoint}`
-                                              ],
-                                            }))
-                                          }
-                                        >
-                                          {expandedSections[
-                                            `${truck.trackingNumber}-${checkpoint}`
-                                          ] ? (
-                                            <ChevronDown className="h-4 w-4 text-white" />
-                                          ) : (
-                                            <ChevronRight className="h-4 w-4 text-white" />
-                                          )}
-                                        </Button>
-                                      )}
                                     </div>
 
                                     <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
@@ -474,13 +430,13 @@ export default function Home() {
                                             : truck.currentStage ===
                                               3 * index + 2) &&
                                           user.checkPointAssigned.toString() ===
-                                            checkpoint ? (
+                                            checkpoint[0] ? (
                                             <Button
                                               size="sm"
                                               onClick={() => {
                                                 handleUpdate(
                                                   truck.trackingNumber,
-                                                  checkpoint,
+                                                  checkpoint[0],
                                                   0,
                                                   true
                                                 );
@@ -491,9 +447,9 @@ export default function Home() {
                                             </Button>
                                           ) : (
                                             <span className="text-gray-600">
-                                              {data?.start
+                                              {checkpoint[1]?.start
                                                 ? new Date(
-                                                    data.start
+                                                    checkpoint[1].start
                                                   ).toLocaleString()
                                                 : "Pending"}
                                             </span>
@@ -518,13 +474,13 @@ export default function Home() {
                                             : truck.currentStage ===
                                               3 * index + 3) &&
                                           user.checkPointAssigned.toString() ===
-                                            checkpoint ? (
+                                            checkpoint[0] ? (
                                             <Button
                                               size="sm"
                                               onClick={() => {
                                                 handleUpdate(
                                                   truck.trackingNumber,
-                                                  checkpoint,
+                                                  checkpoint[0],
                                                   0,
                                                   false
                                                 );
@@ -535,9 +491,9 @@ export default function Home() {
                                             </Button>
                                           ) : (
                                             <span className="text-gray-600">
-                                              {data?.end
+                                              {checkpoint[1]?.end
                                                 ? new Date(
-                                                    data.end
+                                                    checkpoint[1].end
                                                   ).toLocaleString()
                                                 : "Pending"}
                                             </span>
