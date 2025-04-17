@@ -62,18 +62,17 @@ export default function Track() {
       truck.finished === showFinished &&
       truck.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
+  const checkpoints = [
+    "entry_gate",
+    "front_office",
+    "weigh_bridge",
+    "qc",
+    "material_handling",
+    "weigh_bridge_return",
+    "front_office_return",
+    "entry_gate_return",
+  ];
   const averageTimeAtCheckpoints = (trucks: any) => {
-    const checkpoints = [
-      "entry_gate",
-      "front_office",
-      "weigh_bridge",
-      "qc",
-      "material_handling",
-      "weigh_bridge_return",
-      "front_office_return",
-      "entry_gate_return",
-    ];
     const averages = checkpoints.map((checkpoint) => {
       const times = trucks.map((truck: any) => {
         const timestamp = truck.timestamps[checkpoint];
@@ -247,7 +246,7 @@ export default function Track() {
                         className="h-2 w-16"
                       />
                       <span className="text-sm font-medium">
-                        {truck.currentStage + 1}/5
+                        {truck.currentStage + 1}/{checkpoints.length}
                       </span>
                     </div>
                   </div>
@@ -274,13 +273,7 @@ export default function Track() {
 
                 {selectedTruck === truck.trackingNumber && (
                   <div className="mt-4 space-y-3 animate-in fade-in-50 slide-in-from-top-5 duration-300">
-                    {[
-                      "entry_gate",
-                      "front_office",
-                      "weigh_bridge",
-                      "qc",
-                      "material_handling",
-                    ].map((checkpoint, index) => {
+                    {checkpoints?.map((checkpoint, index) => {
                       const timestamps = truck.timestamps[checkpoint];
                       const lastTimestamp = timestamps[timestamps.length - 1];
                       const isCurrentStage = truck.currentStage === index;
