@@ -87,15 +87,13 @@ export default function Navbar({
             </span>
           )}
 
-          {(userRole === "admin" || userRole === "operator") && onAddTruck && (
-            <Button
-              onClick={onAddTruck}
-              className="flex items-center gap-1 text-sm"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Truck</span>
-            </Button>
-          )}
+          <Button
+            onClick={onAddTruck}
+            className="flex items-center gap-1 text-sm"
+          >
+            <Plus className="h-4 w-4" />
+            Add Truck
+          </Button>
 
           <Button
             variant="destructive"
@@ -103,7 +101,6 @@ export default function Navbar({
             className="flex items-center gap-1 text-sm"
           >
             <LogOut className="h-4 w-4" />
-            <span>Logout</span>
           </Button>
         </div>
       </div>

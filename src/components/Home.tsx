@@ -190,12 +190,7 @@ export default function Home() {
 
   return (
     <div className="w-screen overflow-x-hidden p-2">
-      <Navbar
-        userName={user.name}
-        userRole={user.role}
-        onAddTruck={() => setIsAddTruckModalOpen(true)}
-      />
-
+      <Navbar userName={user.name} userRole={user.role} />
       {user.role === "admin" && (
         <Card className="mb-4 mt-[20dvh] mx-2">
           <CardHeader>
@@ -272,14 +267,13 @@ export default function Home() {
         </Card>
       )}
 
-      <Card className="mx-2 p-2 overflow-y-scroll max-h-full md:max-h-[65dvh]">
+      <div className="mx-2 p-2 overflow-y-scroll max-h-full min-h-[60dvh]">
         <CardHeader className="flex flex-col md:flex-row items-center justify-between pb-2">
           <div>
-            <CardTitle className="flex flex-wrap items-center gap-2 w-full md:w-fit">
-              <Truck className="h-5 w-5" />
+            <p className="text-3xl font-bold tracking-tight flex items-center justify-start">
               Truck Tracking
-            </CardTitle>
-            <CardDescription>
+            </p>
+            <CardDescription className="flex items-center justify-start">
               Monitor and manage all trucks in the system
             </CardDescription>
           </div>
@@ -540,7 +534,7 @@ export default function Home() {
             </div>
           )}
         </CardContent>
-      </Card>
+      </div>
 
       <AddTruckModal
         isOpen={isAddTruckModalOpen}
