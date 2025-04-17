@@ -287,7 +287,7 @@ export default function Track() {
                       const timestamps = truck.timestamps[checkpoint];
                       console.log(timestamps);
                       const lastTimestamp = timestamps[0];
-                      const isCurrentStage = truck.currentStage === index;
+                      const isCurrentStage = truck.currentStage / 2 === index;
                       const hasCompleted = index < truck.currentStage / 2;
 
                       return (

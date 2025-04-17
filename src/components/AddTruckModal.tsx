@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Truck, Loader2 } from "lucide-react";
+import { Truck, Loader2, Plus, X } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import api from "../utils/api";
 import { toast } from "sonner";
@@ -22,9 +22,33 @@ interface AddTruckModalProps {
   onClose: () => void;
 }
 
+interface DetailField {
+  key: string;
+  value: string;
+}
+
 export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
   const [truckName, setTruckName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [details, setDetails] = useState<DetailField[]>([]);
+
+  const addDetailField = () => {
+    setDetails([...details, { key: "", value: "" }]);
+  };
+
+  const removeDetailField = (index: number) => {
+    setDetails(details.filter((_, i) => i !== index));
+  };
+
+  const updateDetailField = (
+    index: number,
+    field: "key" | "value",
+    value: string
+  ) => {
+    const newDetails = [...details];
+    newDetails[index][field] = value;
+    setDetails(newDetails);
+  };
 
   const handleSubmit = async () => {
     if (!truckName.trim()) {
@@ -32,11 +56,22 @@ export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
       return;
     }
 
+    const detailsObject = details.reduce((acc, { key, value }) => {
+      if (key.trim()) {
+        acc[key.trim()] = value.trim();
+      }
+      return acc;
+    }, {} as Record<string, string>);
+
     setIsSubmitting(true);
     try {
-      await api.post(`/track/add-truck/${truckName}`);
+      await api.post(`/track/add-truck`, {
+        trackingNumber: truckName,
+        details: detailsObject,
+      });
       toast(`Truck ${truckName} has been created successfully`);
       setTruckName("");
+      setDetails([]);
       onClose();
     } catch (error) {
       console.error("Failed to create truck:", error);
@@ -70,6 +105,53 @@ export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
               className="w-full"
               autoComplete="off"
             />
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label>Additional Details</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addDetailField}
+                className="flex items-center gap-1 text-white hover:text-white"
+              >
+                <Plus className="h-4 w-4 text-white" />
+                Add Field
+              </Button>
+            </div>
+
+            {details.map((detail, index) => (
+              <div
+                key={index}
+                className="grid grid-cols-[1fr,1fr,auto] gap-2 items-start"
+              >
+                <Input
+                  placeholder="Key"
+                  value={detail.key}
+                  onChange={(e) =>
+                    updateDetailField(index, "key", e.target.value)
+                  }
+                />
+                <Input
+                  placeholder="Value"
+                  value={detail.value}
+                  onChange={(e) =>
+                    updateDetailField(index, "value", e.target.value)
+                  }
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeDetailField(index)}
+                  className="h-10 w-10"
+                >
+                  <X className="h-4 w-4 text-white" />
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
         <DialogFooter>
