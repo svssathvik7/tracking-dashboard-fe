@@ -4,8 +4,9 @@ import { LogOut, Plus, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddTruckModal from "./AddTruckModal";
+import api from "../utils/api";
 
 interface NavbarProps {
   userName?: string;
@@ -20,6 +21,7 @@ export default function Navbar({
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAddTruckModalOpen, setIsAddTruckModalOpen] = useState(false);
+  const [isBackendReady, setIsBackendReady] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,6 +32,31 @@ export default function Navbar({
   };
 
   const isActive = (path: string) => location.pathname === path;
+
+  useEffect(() => {
+    const checkBackendHealth = async () => {
+      try {
+        const response = (await api.get("/health")).data;
+        setIsBackendReady(response.status === true);
+        console.log("Backend health check result:", response.status);
+      } catch (error) {
+        console.error("Backend health check failed:", error);
+        setIsBackendReady(false);
+      }
+    };
+
+    checkBackendHealth();
+  }, []);
+
+  if (!isBackendReady) {
+    return (
+      <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
+        <p className="text-lg font-medium text-gray-900">
+          Our backend is spinning up, please wait
+        </p>
+      </div>
+    );
+  }
 
   return (
     <nav className="z-50 fixed top-0 left-0 right-0 bg-white border-b shadow-sm">
