@@ -18,7 +18,7 @@ export interface UserData {
   name: string;
   password: string;
   role: string;
-  checkPointAssigned: CheckPoints;
+  checkPointAssigned: [CheckPoints];
 }
 
 export default function Login() {

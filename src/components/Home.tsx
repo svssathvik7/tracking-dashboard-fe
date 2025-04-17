@@ -88,7 +88,7 @@ export default function Home() {
     name: "",
     password: "",
     role: "",
-    checkPointAssigned: CheckPoints.none,
+    checkPointAssigned: [CheckPoints.none],
   });
   const [operators, setOperators] = useState<UserData[]>([]);
   const [trucks, setTrucks] = useState<TruckData[]>([]);
@@ -170,7 +170,7 @@ export default function Home() {
   };
 
   const getProgressPercentage = (currentStage: number) => {
-    return (currentStage + 1) * 20;
+    return (currentStage + 1) * 10;
   };
 
   const formatCheckpointName = (name: string) => {
@@ -386,7 +386,7 @@ export default function Home() {
                               className="h-2 w-16"
                             />
                             <span className="text-sm font-medium">
-                              {truck.currentStage + 1}/{checkpoints.length}
+                              {truck.currentStage + 1}/{2 * checkpoints.length}
                             </span>
                           </div>
                         </div>
@@ -399,8 +399,11 @@ export default function Home() {
                             (checkpoint, index) => {
                               const isOperatorCheckpoint =
                                 user.role === "operator" &&
-                                user.checkPointAssigned.toString() ===
-                                  checkpoint[0];
+                                user.checkPointAssigned.some(
+                                  (checkPoint) =>
+                                    checkPoint.toString() ==
+                                    checkpoint[0].toString()
+                                );
 
                               return (
                                 <div
@@ -441,9 +444,8 @@ export default function Home() {
                                           Start:{" "}
                                         </span>
                                         <div className="mt-1">
-                                          {index === truck.currentStage &&
-                                          user.checkPointAssigned.toString() ===
-                                            checkpoint[0] ? (
+                                          {2 * index === truck.currentStage &&
+                                          isOperatorCheckpoint ? (
                                             <Button
                                               size="sm"
                                               onClick={() => {
@@ -481,9 +483,9 @@ export default function Home() {
                                           End:{" "}
                                         </span>
                                         <div className="mt-1">
-                                          {index === truck.currentStage &&
-                                          user.checkPointAssigned.toString() ===
-                                            checkpoint[0] ? (
+                                          {2 * index + 1 ===
+                                            truck.currentStage &&
+                                          isOperatorCheckpoint ? (
                                             <Button
                                               size="sm"
                                               onClick={() => {

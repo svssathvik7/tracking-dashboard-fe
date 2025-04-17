@@ -36,7 +36,7 @@ export default function Track() {
     name: "",
     password: "",
     role: "",
-    checkPointAssigned: CheckPoints.none,
+    checkPointAssigned: [CheckPoints.none],
   });
   const [isAddTruckModalOpen, setIsAddTruckModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -103,7 +103,7 @@ export default function Track() {
   ];
 
   const getProgressPercentage = (currentStage: number) => {
-    return (currentStage + 1) * 20;
+    return (currentStage + 1) * 10;
   };
   const handleLogout = () => {
     localStorage.removeItem("userEmail");
@@ -246,7 +246,7 @@ export default function Track() {
                         className="h-2 w-16"
                       />
                       <span className="text-sm font-medium">
-                        {truck.currentStage + 1}/{checkpoints.length}
+                        {truck.currentStage + 1}/{2 * checkpoints.length}
                       </span>
                     </div>
                   </div>
@@ -273,11 +273,12 @@ export default function Track() {
 
                 {selectedTruck === truck.trackingNumber && (
                   <div className="mt-4 space-y-3 animate-in fade-in-50 slide-in-from-top-5 duration-300">
-                    {checkpoints?.map((checkpoint, index) => {
+                    {checkpoints?.map((checkpoint: any, index: any) => {
                       const timestamps = truck.timestamps[checkpoint];
-                      const lastTimestamp = timestamps[timestamps.length - 1];
+                      console.log(timestamps);
+                      const lastTimestamp = timestamps[0];
                       const isCurrentStage = truck.currentStage === index;
-                      const hasCompleted = index < truck.currentStage;
+                      const hasCompleted = index < truck.currentStage / 2;
 
                       return (
                         <div
