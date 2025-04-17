@@ -37,26 +37,38 @@ interface TruckData {
   finished: boolean;
   trackingNumber: string;
   timestamps: {
-    entry_gate: Array<{
+    entry_gate: {
       start: Date;
       end: Date;
-    }>;
-    front_office: Array<{
+    };
+    front_office: {
       start: Date;
       end: Date;
-    }>;
-    weigh_bridge: Array<{
+    };
+    weigh_bridge: {
       start: Date;
       end: Date;
-    }>;
-    qc: Array<{
+    };
+    qc: {
       start: Date;
       end: Date;
-    }>;
-    material_handling: Array<{
+    };
+    material_handling: {
       start: Date;
       end: Date;
-    }>;
+    };
+    weigh_bridge_return: {
+      start: Date;
+      end: Date;
+    };
+    front_office_return: {
+      start: Date;
+      end: Date;
+    };
+    entry_gate_return: {
+      start: Date;
+      end: Date;
+    };
   };
 }
 
@@ -151,6 +163,9 @@ export default function Home() {
   };
 
   const formatCheckpointName = (name: string) => {
+    if (name === "none") {
+      return "None";
+    }
     return name
       .split("_")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -158,10 +173,10 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-8 max-w-7xl">
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div className="container mx-auto px-4 py-8 flex-grow flex items-center justify-center flex-col w-screen h-fit">
+      <header className="w-screen absolute top-0 left-0 p-2 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="">Dashboard</h1>
           {user.name && (
             <p className="text-muted-foreground mt-1">
               Welcome back, {user.name}
@@ -190,7 +205,7 @@ export default function Home() {
       </header>
 
       {user.role === "admin" && (
-        <Card className="mb-8">
+        <Card className="mb-8 mt-[20dvh] w-screen mx-auto">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
@@ -250,11 +265,9 @@ export default function Home() {
                             Checkpoint:
                           </span>
                           <Badge variant="secondary" className="capitalize">
-                            {operator.checkPointAssigned !== CheckPoints.none
-                              ? formatCheckpointName(
-                                  CheckPoints[operator.checkPointAssigned]
-                                )
-                              : "None"}
+                            {formatCheckpointName(
+                              operator.checkPointAssigned.toString()
+                            )}
                           </Badge>
                         </div>
                       </div>
@@ -267,7 +280,7 @@ export default function Home() {
         </Card>
       )}
 
-      <Card>
+      <Card className="w-screen mx-auto p-2 overflow-y-scroll max-h-[65dvh]">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
             <CardTitle className="flex items-center gap-2">
@@ -372,7 +385,7 @@ export default function Home() {
                         }
                         className="flex items-center justify-between w-full py-2 text-sm font-medium text-left text-gray-700 hover:text-gray-900 transition-colors"
                       >
-                        <span>Checkpoint Details</span>
+                        <span className="text-white">Checkpoint Details</span>
                         {expandedSections[truck.trackingNumber] ? (
                           <ChevronDown className="h-4 w-4" />
                         ) : (
@@ -381,7 +394,7 @@ export default function Home() {
                       </button>
 
                       {expandedSections[truck.trackingNumber] && (
-                        <div className="mt-4 space-y-3 animate-in fade-in-50 slide-in-from-top-5 duration-300">
+                        <div className="mt-4 space-y-3 animate-in fade-in-50 slide-in-from-top-5 duration-300 overflow-y-scroll max-h-56">
                           {Object.entries(truck.timestamps).map(
                             ([checkpoint, data], index) => {
                               const isExpandable = [
@@ -414,7 +427,9 @@ export default function Home() {
                                             : "text-gray-700"
                                         )}
                                       >
-                                        {formatCheckpointName(checkpoint)}
+                                        {formatCheckpointName(
+                                          checkpoint.toString()
+                                        )}
                                       </h4>
                                       {isExpandable && (
                                         <Button
@@ -433,290 +448,103 @@ export default function Home() {
                                           {expandedSections[
                                             `${truck.trackingNumber}-${checkpoint}`
                                           ] ? (
-                                            <ChevronDown className="h-4 w-4" />
+                                            <ChevronDown className="h-4 w-4 text-white" />
                                           ) : (
-                                            <ChevronRight className="h-4 w-4" />
+                                            <ChevronRight className="h-4 w-4 text-white" />
                                           )}
                                         </Button>
                                       )}
                                     </div>
 
-                                    {isExpandable ? (
-                                      expandedSections[
-                                        `${truck.trackingNumber}-${checkpoint}`
-                                      ] && (
-                                        <div className="mt-3 space-y-3 animate-in fade-in-50 duration-200">
-                                          <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                            <h5 className="text-sm font-medium text-gray-700 mb-2">
-                                              Incoming
-                                            </h5>
-                                            <div className="grid grid-cols-2 gap-2 text-sm">
-                                              <div>
-                                                <span
-                                                  className={cn(
-                                                    "font-medium",
-                                                    isOperatorCheckpoint
-                                                      ? "text-yellow-800"
-                                                      : "text-gray-700"
-                                                  )}
-                                                >
-                                                  Start:{" "}
-                                                </span>
-                                                <div className="mt-1">
-                                                  {truck.currentStage ===
-                                                    4 * index &&
-                                                  user.checkPointAssigned.toString() ===
-                                                    checkpoint ? (
-                                                    <Button
-                                                      size="sm"
-                                                      onClick={() => {
-                                                        handleUpdate(
-                                                          truck.trackingNumber,
-                                                          checkpoint,
-                                                          0,
-                                                          true
-                                                        );
-                                                      }}
-                                                      className="bg-green-600 hover:bg-green-700 text-white"
-                                                    >
-                                                      Update log
-                                                    </Button>
-                                                  ) : (
-                                                    <span className="text-gray-600">
-                                                      {data[0]?.start
-                                                        ? new Date(
-                                                            data[0].start
-                                                          ).toLocaleString()
-                                                        : "Pending"}
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              </div>
-                                              <div>
-                                                <span
-                                                  className={cn(
-                                                    "font-medium",
-                                                    isOperatorCheckpoint
-                                                      ? "text-yellow-800"
-                                                      : "text-gray-700"
-                                                  )}
-                                                >
-                                                  End:{" "}
-                                                </span>
-                                                <div className="mt-1">
-                                                  {truck.currentStage ===
-                                                    4 * index + 1 &&
-                                                  user.checkPointAssigned.toString() ===
-                                                    checkpoint ? (
-                                                    <Button
-                                                      size="sm"
-                                                      onClick={() => {
-                                                        handleUpdate(
-                                                          truck.trackingNumber,
-                                                          checkpoint,
-                                                          0,
-                                                          false
-                                                        );
-                                                      }}
-                                                      className="bg-green-600 hover:bg-green-700 text-white"
-                                                    >
-                                                      Update log
-                                                    </Button>
-                                                  ) : (
-                                                    <span className="text-gray-600">
-                                                      {data[0]?.end
-                                                        ? new Date(
-                                                            data[0].end
-                                                          ).toLocaleString()
-                                                        : "Pending"}
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                            <h5 className="text-sm font-medium text-gray-700 mb-2">
-                                              Returning
-                                            </h5>
-                                            <div className="grid grid-cols-2 gap-2 text-sm">
-                                              <div>
-                                                <span
-                                                  className={cn(
-                                                    "font-medium",
-                                                    isOperatorCheckpoint
-                                                      ? "text-yellow-800"
-                                                      : "text-gray-700"
-                                                  )}
-                                                >
-                                                  Start:{" "}
-                                                </span>
-                                                <div className="mt-1">
-                                                  {truck.currentStage ===
-                                                    4 * index + 2 &&
-                                                  user.checkPointAssigned.toString() ===
-                                                    checkpoint ? (
-                                                    <Button
-                                                      size="sm"
-                                                      onClick={() => {
-                                                        handleUpdate(
-                                                          truck.trackingNumber,
-                                                          checkpoint,
-                                                          1,
-                                                          true
-                                                        );
-                                                      }}
-                                                      className="bg-green-600 hover:bg-green-700 text-white"
-                                                    >
-                                                      Update log
-                                                    </Button>
-                                                  ) : (
-                                                    <span className="text-gray-600">
-                                                      {data[1]?.start
-                                                        ? new Date(
-                                                            data[1].start
-                                                          ).toLocaleString()
-                                                        : "Pending"}
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              </div>
-                                              <div>
-                                                <span
-                                                  className={cn(
-                                                    "font-medium",
-                                                    isOperatorCheckpoint
-                                                      ? "text-yellow-800"
-                                                      : "text-gray-700"
-                                                  )}
-                                                >
-                                                  End:{" "}
-                                                </span>
-                                                <div className="mt-1">
-                                                  {truck.currentStage ===
-                                                    4 * index + 3 &&
-                                                  user.checkPointAssigned.toString() ===
-                                                    checkpoint ? (
-                                                    <Button
-                                                      size="sm"
-                                                      onClick={() => {
-                                                        handleUpdate(
-                                                          truck.trackingNumber,
-                                                          checkpoint,
-                                                          1,
-                                                          false
-                                                        );
-                                                      }}
-                                                      className="bg-green-600 hover:bg-green-700 text-white"
-                                                    >
-                                                      Update log
-                                                    </Button>
-                                                  ) : (
-                                                    <span className="text-gray-600">
-                                                      {data[1]?.end
-                                                        ? new Date(
-                                                            data[1].end
-                                                          ).toLocaleString()
-                                                        : "Pending"}
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      )
-                                    ) : (
-                                      <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                                        <div>
-                                          <span
-                                            className={cn(
-                                              "font-medium",
-                                              isOperatorCheckpoint
-                                                ? "text-yellow-800"
-                                                : "text-gray-700"
-                                            )}
-                                          >
-                                            Start:{" "}
-                                          </span>
-                                          <div className="mt-1">
-                                            {(index === 3
-                                              ? truck.currentStage === 4 * index
-                                              : truck.currentStage ===
-                                                3 * index + 2) &&
-                                            user.checkPointAssigned.toString() ===
-                                              checkpoint ? (
-                                              <Button
-                                                size="sm"
-                                                onClick={() => {
-                                                  handleUpdate(
-                                                    truck.trackingNumber,
-                                                    checkpoint,
-                                                    0,
-                                                    true
-                                                  );
-                                                }}
-                                                className="bg-green-600 hover:bg-green-700 text-white"
-                                              >
-                                                Update log
-                                              </Button>
-                                            ) : (
-                                              <span className="text-gray-600">
-                                                {data[0]?.start
-                                                  ? new Date(
-                                                      data[0].start
-                                                    ).toLocaleString()
-                                                  : "Pending"}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-                                        <div>
-                                          <span
-                                            className={cn(
-                                              "font-medium",
-                                              isOperatorCheckpoint
-                                                ? "text-yellow-800"
-                                                : "text-gray-700"
-                                            )}
-                                          >
-                                            End:{" "}
-                                          </span>
-                                          <div className="mt-1">
-                                            {(index === 3
-                                              ? truck.currentStage ===
-                                                4 * index + 1
-                                              : truck.currentStage ===
-                                                3 * index + 3) &&
-                                            user.checkPointAssigned.toString() ===
-                                              checkpoint ? (
-                                              <Button
-                                                size="sm"
-                                                onClick={() => {
-                                                  handleUpdate(
-                                                    truck.trackingNumber,
-                                                    checkpoint,
-                                                    0,
-                                                    false
-                                                  );
-                                                }}
-                                                className="bg-green-600 hover:bg-green-700 text-white"
-                                              >
-                                                Update log
-                                              </Button>
-                                            ) : (
-                                              <span className="text-gray-600">
-                                                {data[0]?.end
-                                                  ? new Date(
-                                                      data[0].end
-                                                    ).toLocaleString()
-                                                  : "Pending"}
-                                              </span>
-                                            )}
-                                          </div>
+                                    <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                                      <div>
+                                        <span
+                                          className={cn(
+                                            "font-medium",
+                                            isOperatorCheckpoint
+                                              ? "text-yellow-800"
+                                              : "text-gray-700"
+                                          )}
+                                        >
+                                          Start:{" "}
+                                        </span>
+                                        <div className="mt-1">
+                                          {(index === 3
+                                            ? truck.currentStage === 4 * index
+                                            : truck.currentStage ===
+                                              3 * index + 2) &&
+                                          user.checkPointAssigned.toString() ===
+                                            checkpoint ? (
+                                            <Button
+                                              size="sm"
+                                              onClick={() => {
+                                                handleUpdate(
+                                                  truck.trackingNumber,
+                                                  checkpoint,
+                                                  0,
+                                                  true
+                                                );
+                                              }}
+                                              className="bg-green-600 hover:bg-green-700 text-white"
+                                            >
+                                              Update log
+                                            </Button>
+                                          ) : (
+                                            <span className="text-gray-600">
+                                              {data?.start
+                                                ? new Date(
+                                                    data.start
+                                                  ).toLocaleString()
+                                                : "Pending"}
+                                            </span>
+                                          )}
                                         </div>
                                       </div>
-                                    )}
+                                      <div>
+                                        <span
+                                          className={cn(
+                                            "font-medium",
+                                            isOperatorCheckpoint
+                                              ? "text-yellow-800"
+                                              : "text-gray-700"
+                                          )}
+                                        >
+                                          End:{" "}
+                                        </span>
+                                        <div className="mt-1">
+                                          {(index === 3
+                                            ? truck.currentStage ===
+                                              4 * index + 1
+                                            : truck.currentStage ===
+                                              3 * index + 3) &&
+                                          user.checkPointAssigned.toString() ===
+                                            checkpoint ? (
+                                            <Button
+                                              size="sm"
+                                              onClick={() => {
+                                                handleUpdate(
+                                                  truck.trackingNumber,
+                                                  checkpoint,
+                                                  0,
+                                                  false
+                                                );
+                                              }}
+                                              className="bg-green-600 hover:bg-green-700 text-white"
+                                            >
+                                              Update log
+                                            </Button>
+                                          ) : (
+                                            <span className="text-gray-600">
+                                              {data?.end
+                                                ? new Date(
+                                                    data.end
+                                                  ).toLocaleString()
+                                                : "Pending"}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               );

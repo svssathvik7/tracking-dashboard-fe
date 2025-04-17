@@ -73,7 +73,12 @@ export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+          <Button
+            className="text-white hover:text-white"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>

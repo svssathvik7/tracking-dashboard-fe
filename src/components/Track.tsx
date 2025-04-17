@@ -14,10 +14,16 @@ import {
   ChevronDown,
   ChevronRight,
   BarChart3,
+  Plus,
+  LogOut,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import api from "../utils/api";
+import { Button } from "./ui/button";
+import { getUserDetails } from "@/utils/getuserDetails";
+import { CheckPoints, UserData } from "./Login";
+import { useNavigate } from "react-router-dom";
 
 export default function Track() {
   const [trucks, setTrucks] = useState([]);
@@ -25,6 +31,15 @@ export default function Track() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTruck, setSelectedTruck] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<UserData>({
+    email: "",
+    name: "",
+    password: "",
+    role: "",
+    checkPointAssigned: CheckPoints.none,
+  });
+  const [isAddTruckModalOpen, setIsAddTruckModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTrucks = async () => {
@@ -84,10 +99,62 @@ export default function Track() {
   const getProgressPercentage = (currentStage: number) => {
     return (currentStage + 1) * 20;
   };
+  const handleLogout = () => {
+    localStorage.removeItem("userEmail");
+    navigate("/login");
+  };
+
+  useEffect(() => {
+    const userEmail = localStorage.getItem("userEmail");
+    const fetch = async () => {
+      setIsLoading(true);
+      try {
+        const userData: UserData = await getUserDetails(userEmail || "abc");
+        setUser(userData);
+
+        const trucksResponse = await api.get("/track/get-all-trucks");
+        setTrucks(trucksResponse.data.data);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetch();
+  }, []);
 
   return (
     <div className="w-screen overflow-x-hidden p-2">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <header className="w-screen absolute top-0 left-0 p-2 flex items-center justify-between">
+        <div>
+          <h1 className="">Dashboard</h1>
+          {user.name && (
+            <p className="text-muted-foreground mt-1">
+              Welcome back, {user.name}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {(user.role === "admin" || user.role === "operator") && (
+            <Button
+              onClick={() => setIsAddTruckModalOpen(true)}
+              className="gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              Add Truck
+            </Button>
+          )}
+          <Button
+            variant="destructive"
+            onClick={handleLogout}
+            className="gap-1"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
+      </header>
+      <div className="mt-[20dvh] flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Track Trucks</h1>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
@@ -190,7 +257,7 @@ export default function Track() {
                   }
                   className="flex items-center justify-between w-full py-2 text-sm font-medium text-left text-gray-700 hover:text-gray-900 transition-colors"
                 >
-                  <span>Checkpoint Details</span>
+                  <span className="text-white">Checkpoint Details</span>
                   {selectedTruck === truck.trackingNumber ? (
                     <ChevronDown className="h-4 w-4" />
                   ) : (
