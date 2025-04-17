@@ -32,6 +32,7 @@ import api from "../utils/api";
 import AddTruckModal from "./AddTruckModal";
 import { CheckPoints, UserData } from "./Login";
 import Navbar from "./Navbar";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const checkpoints = [
   "entry_gate",
@@ -95,6 +96,9 @@ export default function Home() {
   const [trucks, setTrucks] = useState<TruckData[]>([]);
   const [isAddTruckModalOpen, setIsAddTruckModalOpen] = useState(false);
   const [showFinished, setShowFinished] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "in_progress" | "completed"
+  >("in_progress");
   const [expandedSections, setExpandedSections] = useState<{
     [key: string]: boolean;
   }>({});
@@ -185,7 +189,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 flex-grow flex items-center justify-center flex-col w-screen h-fit">
+    <div className="w-screen overflow-x-hidden p-2">
       <Navbar
         userName={user.name}
         userRole={user.role}
@@ -193,9 +197,9 @@ export default function Home() {
       />
 
       {user.role === "admin" && (
-        <Card className="mb-8 mt-[20dvh] w-screen mx-auto">
+        <Card className="mb-4 mt-[20dvh] mx-2">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 w-full md:w-fit">
               <Users className="h-5 w-5" />
               Available Operators
             </CardTitle>
@@ -205,10 +209,10 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
                   <Card key={i} className="animate-pulse">
-                    <CardContent className="p-6">
+                    <CardContent className="p-4">
                       <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
                       <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
                       <div className="h-4 bg-gray-200 rounded w-1/3"></div>
@@ -227,13 +231,13 @@ export default function Home() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {operators.map((operator) => (
                   <Card
                     key={operator.email}
                     className="transition-all duration-300 hover:shadow-md"
                   >
-                    <CardContent className="p-6">
+                    <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <h3 className="text-lg font-semibold mb-1">
@@ -268,10 +272,10 @@ export default function Home() {
         </Card>
       )}
 
-      <Card className="w-screen mx-auto p-2 overflow-y-scroll max-h-[65dvh]">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <Card className="mx-2 p-2 overflow-y-scroll max-h-full md:max-h-[65dvh]">
+        <CardHeader className="flex flex-col md:flex-row items-center justify-between pb-2">
           <div>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex flex-wrap items-center gap-2 w-full md:w-fit">
               <Truck className="h-5 w-5" />
               Truck Tracking
             </CardTitle>
@@ -279,21 +283,48 @@ export default function Home() {
               Monitor and manage all trucks in the system
             </CardDescription>
           </div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="show-finished"
-              checked={showFinished}
-              onCheckedChange={setShowFinished}
-            />
-            <Label htmlFor="show-finished">Show Finished</Label>
+          <div className="flex items-center space-x-4 bg-secondary p-1 rounded-lg">
+            <button
+              onClick={() => setFilterStatus("all")}
+              className={cn(
+                "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                filterStatus === "all"
+                  ? "bg-primary text-white"
+                  : "text-muted-foreground hover:text-primary"
+              )}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilterStatus("in_progress")}
+              className={cn(
+                "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                filterStatus === "in_progress"
+                  ? "bg-primary text-white"
+                  : "text-muted-foreground hover:text-primary"
+              )}
+            >
+              Progress
+            </button>
+            <button
+              onClick={() => setFilterStatus("completed")}
+              className={cn(
+                "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                filterStatus === "completed"
+                  ? "bg-primary text-white"
+                  : "text-muted-foreground hover:text-primary"
+              )}
+            >
+              Completed
+            </button>
           </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
                 <Card key={i} className="animate-pulse">
-                  <CardContent className="p-6">
+                  <CardContent className="p-4">
                     <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
                     <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
                     <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
@@ -302,9 +333,12 @@ export default function Home() {
                 </Card>
               ))}
             </div>
-          ) : trucks.filter((truck) => truck.finished === showFinished)
-              .length === 0 ? (
-            <div className="text-center py-12">
+          ) : trucks.filter((truck) =>
+              filterStatus === "all"
+                ? true
+                : truck.finished === (filterStatus === "completed")
+            ).length === 0 ? (
+            <div className="text-center py-8">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                 <Truck className="h-8 w-8 text-gray-500" />
               </div>
@@ -316,9 +350,13 @@ export default function Home() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {trucks
-                .filter((truck) => truck.finished === showFinished)
+                .filter((truck) =>
+                  filterStatus === "all"
+                    ? true
+                    : truck.finished === (filterStatus === "completed")
+                )
                 .map((truck) => (
                   <Card
                     key={truck.trackingNumber}

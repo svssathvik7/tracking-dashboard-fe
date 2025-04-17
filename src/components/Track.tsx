@@ -58,9 +58,14 @@ export default function Track() {
     fetchTrucks();
   }, []);
 
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "in_progress" | "completed"
+  >("in_progress");
   const filteredTrucks = trucks.filter(
     (truck: any) =>
-      truck.finished === showFinished &&
+      (filterStatus === "all" ||
+        (filterStatus === "completed" && truck.finished) ||
+        (filterStatus === "in_progress" && !truck.finished)) &&
       truck.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const checkpoints = [
@@ -141,13 +146,41 @@ export default function Track() {
         <h1 className="text-3xl font-bold tracking-tight">Track Trucks</h1>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <Switch
-              className="bg-amber-300"
-              id="show-finished"
-              checked={showFinished}
-              onCheckedChange={setShowFinished}
-            />
-            <Label htmlFor="show-finished">Show Finished</Label>
+            <div className="flex items-center space-x-4 bg-secondary p-1 rounded-lg">
+              <button
+                onClick={() => setFilterStatus("all")}
+                className={cn(
+                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                  filterStatus === "all"
+                    ? "bg-primary text-white"
+                    : "text-muted-foreground hover:text-primary"
+                )}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilterStatus("in_progress")}
+                className={cn(
+                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                  filterStatus === "in_progress"
+                    ? "bg-primary text-white"
+                    : "text-muted-foreground hover:text-primary"
+                )}
+              >
+                In Progress
+              </button>
+              <button
+                onClick={() => setFilterStatus("completed")}
+                className={cn(
+                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                  filterStatus === "completed"
+                    ? "bg-primary text-white"
+                    : "text-muted-foreground hover:text-primary"
+                )}
+              >
+                Completed
+              </button>
+            </div>
           </div>
         </div>
       </div>
