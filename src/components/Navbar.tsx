@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import AddTruckModal from "./AddTruckModal";
 
 interface NavbarProps {
   userName?: string;
@@ -18,6 +19,7 @@ export default function Navbar({
   onAddTruck,
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAddTruckModalOpen, setIsAddTruckModalOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -88,12 +90,16 @@ export default function Navbar({
           )}
 
           <Button
-            onClick={onAddTruck}
+            onClick={() => setIsAddTruckModalOpen(true)}
             className="flex items-center gap-1 text-sm"
           >
             <Plus className="h-4 w-4" />
             Add Truck
           </Button>
+          <AddTruckModal
+            isOpen={isAddTruckModalOpen}
+            onClose={() => setIsAddTruckModalOpen(false)}
+          />
 
           <Button
             variant="destructive"
