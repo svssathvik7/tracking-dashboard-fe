@@ -142,7 +142,10 @@ export default function Track() {
         userRole={user.role}
         onAddTruck={() => setIsAddTruckModalOpen(true)}
       />
-      <div className="mt-[20dvh] flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <p className="mt-[20dvh] ml-2 bg-gray-500 text-lg text-white w-fit px-2 rounded-lg">
+        Welcome, {user.name}!
+      </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Track Trucks</h1>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">

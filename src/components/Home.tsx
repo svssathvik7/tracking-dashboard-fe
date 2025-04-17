@@ -183,9 +183,12 @@ export default function Home() {
   return (
     <div className="w-screen overflow-x-hidden p-2">
       <Navbar userName={user.name} userRole={user.role} />
+      <p className="mt-[20dvh] ml-2 m-2 bg-gray-500 text-lg text-white w-fit px-2 rounded-lg">
+        Welcome, {user.name}!
+      </p>
       {user.role === "admin" && (
         <>
-          <Card className="mb-4 mt-[20dvh] mx-2">
+          <Card className="mb-4 mx-2">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 w-full md:w-fit">
@@ -279,7 +282,6 @@ export default function Home() {
           />
         </>
       )}
-
       <div className="mx-2 p-2 overflow-y-scroll max-h-full min-h-[60dvh]">
         <CardHeader className="flex flex-col md:flex-row items-center justify-between pb-2 ">
           <div>
