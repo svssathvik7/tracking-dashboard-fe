@@ -24,6 +24,7 @@ import { Button } from "./ui/button";
 import { getUserDetails } from "@/utils/getuserDetails";
 import { CheckPoints, UserData } from "./Login";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
 
 export default function Track() {
   const [trucks, setTrucks] = useState([]);
@@ -131,35 +132,11 @@ export default function Track() {
 
   return (
     <div className="w-screen overflow-x-hidden p-2">
-      <header className="w-screen absolute top-0 left-0 p-2 flex items-center justify-between">
-        <div>
-          <h1 className="">Dashboard</h1>
-          {user.name && (
-            <p className="text-muted-foreground mt-1">
-              Welcome back, {user.name}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {(user.role === "admin" || user.role === "operator") && (
-            <Button
-              onClick={() => setIsAddTruckModalOpen(true)}
-              className="gap-1"
-            >
-              <Plus className="h-4 w-4" />
-              Add Truck
-            </Button>
-          )}
-          <Button
-            variant="destructive"
-            onClick={handleLogout}
-            className="gap-1"
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </header>
+      <Navbar
+        userName={user.name}
+        userRole={user.role}
+        onAddTruck={() => setIsAddTruckModalOpen(true)}
+      />
       <div className="mt-[20dvh] flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Track Trucks</h1>
         <div className="flex items-center space-x-4">

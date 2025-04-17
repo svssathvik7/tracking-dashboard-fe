@@ -31,6 +31,7 @@ import { getUserDetails } from "../utils/getuserDetails";
 import api from "../utils/api";
 import AddTruckModal from "./AddTruckModal";
 import { CheckPoints, UserData } from "./Login";
+import Navbar from "./Navbar";
 
 const checkpoints = [
   "entry_gate",
@@ -185,35 +186,11 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8 flex-grow flex items-center justify-center flex-col w-screen h-fit">
-      <header className="w-screen absolute top-0 left-0 p-2 flex items-center justify-between">
-        <div>
-          <h1 className="">Dashboard</h1>
-          {user.name && (
-            <p className="text-muted-foreground mt-1">
-              Welcome back, {user.name}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {(user.role === "admin" || user.role === "operator") && (
-            <Button
-              onClick={() => setIsAddTruckModalOpen(true)}
-              className="gap-1"
-            >
-              <Plus className="h-4 w-4" />
-              Add Truck
-            </Button>
-          )}
-          <Button
-            variant="destructive"
-            onClick={handleLogout}
-            className="gap-1"
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </header>
+      <Navbar
+        userName={user.name}
+        userRole={user.role}
+        onAddTruck={() => setIsAddTruckModalOpen(true)}
+      />
 
       {user.role === "admin" && (
         <Card className="mb-8 mt-[20dvh] w-screen mx-auto">

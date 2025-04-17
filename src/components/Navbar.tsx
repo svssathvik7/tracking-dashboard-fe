@@ -1,13 +1,90 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+"use client";
 
-export default function Navbar() {
+import { LogOut, Plus } from "lucide-react";
+import { Button } from "./ui/button";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+
+interface NavbarProps {
+  userName?: string;
+  userRole?: string;
+  onAddTruck?: () => void;
+}
+
+export default function Navbar({
+  userName,
+  userRole,
+  onAddTruck,
+}: NavbarProps) {
   const navigate = useNavigate();
-  useEffect(() => {
-    const isLoggedIn = localStorage.getItem("userEmail");
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-  });
-  return <></>;
+  const location = useLocation();
+
+  const handleLogout = () => {
+    localStorage.removeItem("userEmail");
+    navigate("/login");
+  };
+
+  const isActive = (path: string) => location.pathname === path;
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b shadow-sm">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        {/* Left Side */}
+        <div className="flex items-center gap-6">
+          <h1 className="text-lg font-semibold tracking-tight text-primary">
+            SP
+          </h1>
+
+          <div className="hidden md:flex items-center gap-4">
+            <Link
+              to="/"
+              className={cn(
+                "text-sm font-medium transition-colors duration-200 hover:text-primary",
+                isActive("/") ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              Home
+            </Link>
+            <Link
+              to="/track"
+              className={cn(
+                "text-sm font-medium transition-colors duration-200 hover:text-primary",
+                isActive("/track") ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              Tracking
+            </Link>
+          </div>
+        </div>
+
+        {/* Right Side */}
+        <div className="flex items-center gap-3 md:gap-4">
+          {userName && (
+            <span className="hidden md:inline-block text-sm text-muted-foreground">
+              Welcome, <span className="font-medium">{userName}</span>
+            </span>
+          )}
+
+          {(userRole === "admin" || userRole === "operator") && onAddTruck && (
+            <Button
+              onClick={onAddTruck}
+              className="flex items-center gap-1 text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Truck</span>
+            </Button>
+          )}
+
+          <Button
+            variant="destructive"
+            onClick={handleLogout}
+            className="flex items-center gap-1 text-sm"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+          </Button>
+        </div>
+      </div>
+    </nav>
+  );
 }
