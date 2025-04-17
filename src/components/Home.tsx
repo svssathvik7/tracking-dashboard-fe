@@ -33,6 +33,7 @@ import AddTruckModal from "./AddTruckModal";
 import { CheckPoints, UserData } from "./Login";
 import Navbar from "./Navbar";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import AddOperatorModal from "./AddOperatorModal";
 
 const checkpoints = [
   "entry_gate",
@@ -95,6 +96,7 @@ export default function Home() {
   const [operators, setOperators] = useState<UserData[]>([]);
   const [trucks, setTrucks] = useState<TruckData[]>([]);
   const [isAddTruckModalOpen, setIsAddTruckModalOpen] = useState(false);
+  const [isAddOperatorModalOpen, setIsAddOperatorModalOpen] = useState(false);
   const [showFinished, setShowFinished] = useState(false);
   const [filterStatus, setFilterStatus] = useState<
     "all" | "in_progress" | "completed"
@@ -192,79 +194,100 @@ export default function Home() {
     <div className="w-screen overflow-x-hidden p-2">
       <Navbar userName={user.name} userRole={user.role} />
       {user.role === "admin" && (
-        <Card className="mb-4 mt-[20dvh] mx-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 w-full md:w-fit">
-              <Users className="h-5 w-5" />
-              Available Operators
-            </CardTitle>
-            <CardDescription>
-              Manage and monitor all operators in the system
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-4">
-                      <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-                      <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                    </CardContent>
-                  </Card>
-                ))}
+        <>
+          <Card className="mb-4 mt-[20dvh] mx-2">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 w-full md:w-fit">
+                  <Users className="h-5 w-5" />
+                  Available Operators
+                </CardTitle>
+                <Button
+                  onClick={() => setIsAddOperatorModalOpen(true)}
+                  className="flex items-center gap-1 text-sm"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Operator
+                </Button>
               </div>
-            ) : operators.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                  <Users className="h-8 w-8 text-gray-500" />
+              <CardDescription>
+                Manage and monitor all operators in the system
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[1, 2, 3].map((i) => (
+                    <Card key={i} className="animate-pulse">
+                      <CardContent className="p-4">
+                        <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-                <h3 className="text-lg font-medium">No operators found</h3>
-                <p className="text-gray-500 mt-2">
-                  There are no operators registered in the system.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {operators.map((operator) => (
-                  <Card
-                    key={operator.email}
-                    className="transition-all duration-300 hover:shadow-md"
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-semibold mb-1">
-                            {operator.name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {operator.email}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="capitalize">
-                          {operator.role}
-                        </Badge>
-                      </div>
-                      <div className="pt-4 border-t border-gray-100">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">
-                            Checkpoint:
-                          </span>
-                          <Badge variant="secondary" className="capitalize">
-                            {formatCheckpointName(
-                              operator.checkPointAssigned.toString()
-                            )}
+              ) : operators.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                    <Users className="h-8 w-8 text-gray-500" />
+                  </div>
+                  <h3 className="text-lg font-medium">No operators found</h3>
+                  <p className="text-gray-500 mt-2">
+                    There are no operators registered in the system.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {operators.map((operator) => (
+                    <Card
+                      key={operator.email}
+                      className="transition-all duration-300 hover:shadow-md"
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className="text-lg font-semibold mb-1">
+                              {operator.name}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              {operator.email}
+                            </p>
+                          </div>
+                          <Badge variant="outline" className="capitalize">
+                            {operator.role}
                           </Badge>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                        <div className="pt-4 border-t border-gray-100">
+                          <div className="flex flex-col gap-2">
+                            <span className="text-sm font-medium">
+                              Checkpoints:
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {operator.checkPointAssigned.map((checkpoint) => (
+                                <Badge
+                                  key={checkpoint}
+                                  variant="secondary"
+                                  className="capitalize"
+                                >
+                                  {formatCheckpointName(checkpoint.toString())}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          <AddOperatorModal
+            isOpen={isAddOperatorModalOpen}
+            onClose={() => setIsAddOperatorModalOpen(false)}
+          />
+        </>
       )}
 
       <div className="mx-2 p-2 overflow-y-scroll max-h-full min-h-[60dvh]">
@@ -418,12 +441,20 @@ export default function Home() {
                                 <div
                                   key={checkpoint[0]}
                                   className={cn(
-                                    "border rounded-lg overflow-hidden",
+                                    "border rounded-lg overflow-hidden relative",
                                     isOperatorCheckpoint
                                       ? "bg-yellow-50 border-yellow-200 shadow-sm"
                                       : "bg-gray-50 border-gray-200"
                                   )}
                                 >
+                                  {isOperatorCheckpoint && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="absolute top-2 right-2 bg-yellow-100 text-yellow-800"
+                                    >
+                                      Assigned
+                                    </Badge>
+                                  )}
                                   <div className="p-3">
                                     <div className="flex justify-between items-center">
                                       <h4
