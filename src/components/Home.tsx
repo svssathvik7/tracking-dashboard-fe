@@ -395,7 +395,13 @@ export default function Home() {
                             ) : (
                               <Clock className="h-3.5 w-3.5 mr-1 animate-pulse" />
                             )}
-                            {truck.finished ? "Completed" : "In Progress"}
+                            {truck.finished
+                              ? "Completed"
+                              : `${
+                                  checkpoints[
+                                    Math.floor(truck.currentStage / 2)
+                                  ]
+                                }`}
                           </Badge>
                         </div>
                         <div className="text-right">
