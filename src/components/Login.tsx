@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../constants";
 import api from "../utils/api";
+import { toast } from "sonner";
 
 export enum CheckPoints {
   entry_gate,
@@ -32,9 +33,11 @@ export default function Login() {
         await api.post(`/auth/login`, { email, password })
       ).data.data;
       localStorage.setItem("userEmail", response.email);
+      toast.success("Login successful!");
       navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
+      toast.error("Login failed. Please check your credentials.");
       return;
     }
   };
