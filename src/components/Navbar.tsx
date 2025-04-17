@@ -1,9 +1,10 @@
 "use client";
 
-import { LogOut, Plus } from "lucide-react";
+import { LogOut, Plus, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface NavbarProps {
   userName?: string;
@@ -16,6 +17,8 @@ export default function Navbar({
   userRole,
   onAddTruck,
 }: NavbarProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,7 +30,7 @@ export default function Navbar({
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b shadow-sm">
+    <nav className="z-50 fixed top-0 left-0 right-0 bg-white border-b shadow-sm">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Left Side */}
         <div className="flex items-center gap-6">
@@ -35,13 +38,31 @@ export default function Navbar({
             SP
           </h1>
 
-          <div className="hidden md:flex items-center gap-4">
+          <div className="md:hidden">
+            <Button
+              className="text-white"
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
+          <div
+            className={cn(
+              "md:flex items-center gap-4",
+              isMobileMenuOpen
+                ? "absolute top-full left-0 right-0 bg-white border-b p-4 flex flex-col space-y-2"
+                : "hidden"
+            )}
+          >
             <Link
               to="/"
               className={cn(
                 "text-sm font-medium transition-colors duration-200 hover:text-primary",
                 isActive("/") ? "text-primary" : "text-muted-foreground"
               )}
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               Home
             </Link>
@@ -51,6 +72,7 @@ export default function Navbar({
                 "text-sm font-medium transition-colors duration-200 hover:text-primary",
                 isActive("/track") ? "text-primary" : "text-muted-foreground"
               )}
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               Tracking
             </Link>
