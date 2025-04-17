@@ -32,6 +32,16 @@ import api from "../utils/api";
 import AddTruckModal from "./AddTruckModal";
 import { CheckPoints, UserData } from "./Login";
 
+const checkpoints = [
+  "entry_gate",
+  "front_office",
+  "weigh_bridge",
+  "qc",
+  "material_handling",
+  "weigh_bridge_return",
+  "front_office_return",
+  "entry_gate_return",
+];
 interface TruckData {
   currentStage: number;
   finished: boolean;
@@ -336,11 +346,17 @@ export default function Home() {
                   <Card
                     key={truck.trackingNumber}
                     className={cn(
-                      "transition-all duration-300 hover:shadow-lg border-l-4",
+                      "transition-all duration-300 hover:shadow-lg border-l-4 cursor-pointer",
                       truck.finished
                         ? "border-l-green-500"
                         : "border-l-blue-500"
                     )}
+                    onClick={() => {
+                      setExpandedSections((prev) => ({
+                        ...prev,
+                        [truck.trackingNumber]: !prev[truck.trackingNumber],
+                      }));
+                    }}
                   >
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
@@ -370,7 +386,7 @@ export default function Home() {
                               className="h-2 w-16"
                             />
                             <span className="text-sm font-medium">
-                              {truck.currentStage + 1}/5
+                              {truck.currentStage + 1}/{checkpoints.length}
                             </span>
                           </div>
                         </div>
@@ -425,10 +441,7 @@ export default function Home() {
                                           Start:{" "}
                                         </span>
                                         <div className="mt-1">
-                                          {(index === 3
-                                            ? truck.currentStage === 4 * index
-                                            : truck.currentStage ===
-                                              3 * index + 2) &&
+                                          {index === truck.currentStage &&
                                           user.checkPointAssigned.toString() ===
                                             checkpoint[0] ? (
                                             <Button
@@ -468,11 +481,7 @@ export default function Home() {
                                           End:{" "}
                                         </span>
                                         <div className="mt-1">
-                                          {(index === 3
-                                            ? truck.currentStage ===
-                                              4 * index + 1
-                                            : truck.currentStage ===
-                                              3 * index + 3) &&
+                                          {index === truck.currentStage &&
                                           user.checkPointAssigned.toString() ===
                                             checkpoint[0] ? (
                                             <Button
