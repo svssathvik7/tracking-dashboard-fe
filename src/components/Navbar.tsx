@@ -87,7 +87,7 @@ export default function Navbar({
           </div>
           <div
             className={cn(
-              "md:flex items-center gap-4",
+              "md:flex items-center gap-4 bg-secondary/50 rounded-lg p-2",
               isMobileMenuOpen
                 ? "absolute top-full left-0 right-0 bg-white border-b p-4 flex flex-col space-y-2"
                 : "hidden"
@@ -96,8 +96,10 @@ export default function Navbar({
             <Link
               to="/"
               className={cn(
-                "text-sm font-medium transition-colors duration-200 hover:text-primary",
-                isActive("/") ? "text-primary" : "text-muted-foreground"
+                "px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-primary/10",
+                isActive("/")
+                  ? "bg-primary text-white"
+                  : "text-muted-foreground hover:text-primary"
               )}
               onClick={() => setIsMobileMenuOpen(false)}
             >
@@ -106,8 +108,10 @@ export default function Navbar({
             <Link
               to="/track"
               className={cn(
-                "text-sm font-medium transition-colors duration-200 hover:text-primary",
-                isActive("/track") ? "text-primary" : "text-muted-foreground"
+                "px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-primary/10",
+                isActive("/track")
+                  ? "bg-primary text-white"
+                  : "text-muted-foreground hover:text-primary"
               )}
               onClick={() => setIsMobileMenuOpen(false)}
             >
