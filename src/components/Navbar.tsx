@@ -33,12 +33,20 @@ export default function Navbar({
 
   const isActive = (path: string) => location.pathname === path;
 
+  const handleNoAuth = () => {
+    const email = localStorage.getItem("userEmail");
+    if (!email) {
+      navigate("/login");
+    }
+  };
+
   useEffect(() => {
     const checkBackendHealth = async () => {
       try {
         const response = (await api.get("/health")).data;
         setIsBackendReady(response.status === true);
         console.log("Backend health check result:", response.status);
+        handleNoAuth();
       } catch (error) {
         console.error("Backend health check failed:", error);
         setIsBackendReady(false);
