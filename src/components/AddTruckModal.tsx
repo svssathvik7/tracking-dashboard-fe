@@ -27,13 +27,35 @@ interface DetailField {
   value: string;
 }
 
+interface Stage {
+  name: string;
+  stageNumber: number;
+}
+
 export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
   const [truckName, setTruckName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [details, setDetails] = useState<DetailField[]>([]);
+  const [stages, setStages] = useState<Stage[]>([]);
 
   const addDetailField = () => {
     setDetails([...details, { key: "", value: "" }]);
+  };
+
+  const addStage = () => {
+    const nextStageNumber =
+      stages.length > 0 ? stages[stages.length - 1].stageNumber + 1 : 0;
+    setStages([...stages, { name: "", stageNumber: nextStageNumber }]);
+  };
+
+  const removeStage = (index: number) => {
+    setStages(stages.filter((_, i) => i !== index));
+  };
+
+  const updateStageName = (index: number, name: string) => {
+    const newStages = [...stages];
+    newStages[index].name = name;
+    setStages(newStages);
   };
 
   const removeDetailField = (index: number) => {
@@ -68,10 +90,12 @@ export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
       await api.post(`/track/add-truck`, {
         trackingNumber: truckName,
         details: detailsObject,
+        stages: stages.map(({ name, stageNumber }) => ({ name, stageNumber })),
       });
       toast(`Truck ${truckName} has been created successfully`);
       setTruckName("");
       setDetails([]);
+      setStages([]);
       onClose();
     } catch (error) {
       console.error("Failed to create truck:", error);
@@ -83,7 +107,7 @@ export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[80dvh] overflow-y-scroll">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Truck className="h-5 w-5" />
@@ -146,6 +170,47 @@ export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => removeDetailField(index)}
+                  className="h-10 w-10"
+                >
+                  <X className="h-4 w-4 text-white" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label>Stages</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addStage}
+                className="flex items-center gap-1 text-white hover:text-white"
+              >
+                <Plus className="h-4 w-4 text-white" />
+                Add Stage
+              </Button>
+            </div>
+
+            {stages.map((stage, index) => (
+              <div
+                key={index}
+                className="grid grid-cols-[1fr,auto,auto] gap-2 items-start"
+              >
+                <Input
+                  placeholder="Stage Name"
+                  value={stage.name}
+                  onChange={(e) => updateStageName(index, e.target.value)}
+                />
+                <div className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-md">
+                  <span className="text-sm">Stage {stage.stageNumber}</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeStage(index)}
                   className="h-10 w-10"
                 >
                   <X className="h-4 w-4 text-white" />

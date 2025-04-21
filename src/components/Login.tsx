@@ -1,7 +1,5 @@
-import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BACKEND_URL } from "../constants";
 import api from "../utils/api";
 import { toast } from "sonner";
 

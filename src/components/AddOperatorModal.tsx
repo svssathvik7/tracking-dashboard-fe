@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -23,21 +23,19 @@ interface AddOperatorModalProps {
   onClose: () => void;
 }
 
-const checkpoints = [
-  "entry_gate",
-  "front_office",
-  "weigh_bridge",
-  "qc",
-  "material_handling",
-  "weigh_bridge_return",
-  "front_office_return",
-  "entry_gate_return",
-];
-
 export default function AddOperatorModal({
   isOpen,
   onClose,
 }: AddOperatorModalProps) {
+  useEffect(() => {
+    const fetch = async () => {
+      const checkPoints = (await api.get("/track/get-all-checkpoints")).data;
+      setCheckPoints(Array.isArray(checkPoints.data) ? checkPoints.data : []);
+    };
+    fetch();
+  }, []);
+  const [checkpoints, setCheckPoints] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -149,18 +147,19 @@ export default function AddOperatorModal({
           <div className="grid gap-2">
             <Label>Assigned Checkpoints</Label>
             <div className="grid grid-cols-2 gap-2">
-              {checkpoints.map((checkpoint) => (
-                <div key={checkpoint} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={checkpoint}
-                    checked={formData.checkPointAssigned.includes(checkpoint)}
-                    onCheckedChange={() => handleCheckpointToggle(checkpoint)}
-                  />
-                  <Label htmlFor={checkpoint} className="text-sm font-normal">
-                    {formatCheckpointName(checkpoint)}
-                  </Label>
-                </div>
-              ))}
+              {checkpoints.length != 0 &&
+                checkpoints.map((checkpoint) => (
+                  <div key={checkpoint} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={checkpoint}
+                      checked={formData.checkPointAssigned.includes(checkpoint)}
+                      onCheckedChange={() => handleCheckpointToggle(checkpoint)}
+                    />
+                    <Label htmlFor={checkpoint} className="text-sm font-normal">
+                      {formatCheckpointName(checkpoint)}
+                    </Label>
+                  </div>
+                ))}
             </div>
             {formData.checkPointAssigned.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">

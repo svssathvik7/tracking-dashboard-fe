@@ -26,14 +26,14 @@ import { UserData } from "./Login";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 
-interface TruckStage {
+export interface TruckStage {
   name: string;
   stageNumber: number;
   start: Date | null;
   end: Date | null;
 }
 
-interface TruckType {
+export interface TruckType {
   currentStage: number;
   finished: boolean;
   trackingNumber: string;

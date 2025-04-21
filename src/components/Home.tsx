@@ -7,73 +7,20 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Truck, Users, CheckCircle, Clock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { getUserDetails } from "../utils/getuserDetails";
 import api from "../utils/api";
 import AddTruckModal from "./AddTruckModal";
-import { CheckPoints, UserData } from "./Login";
+import { UserData } from "./Login";
 import Navbar from "./Navbar";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import AddOperatorModal from "./AddOperatorModal";
-
-const checkpoints = [
-  "entry_gate",
-  "front_office",
-  "weigh_bridge",
-  "qc",
-  "material_handling",
-  "weigh_bridge_return",
-  "front_office_return",
-  "entry_gate_return",
-];
-interface TruckData {
-  currentStage: number;
-  finished: boolean;
-  trackingNumber: string;
-  details: Record<string, any>;
-  timestamps: {
-    entry_gate: {
-      start: Date;
-      end: Date;
-    };
-    front_office: {
-      start: Date;
-      end: Date;
-    };
-    weigh_bridge: {
-      start: Date;
-      end: Date;
-    };
-    qc: {
-      start: Date;
-      end: Date;
-    };
-    material_handling: {
-      start: Date;
-      end: Date;
-    };
-    weigh_bridge_return: {
-      start: Date;
-      end: Date;
-    };
-    front_office_return: {
-      start: Date;
-      end: Date;
-    };
-    entry_gate_return: {
-      start: Date;
-      end: Date;
-    };
-  };
-}
+import { TruckType } from "./Track";
 
 export default function Home() {
   const [user, setUser] = useState<UserData>({
@@ -81,10 +28,10 @@ export default function Home() {
     name: "",
     password: "",
     role: "",
-    checkPointAssigned: [CheckPoints.none],
+    checkPointAssigned: ["none"],
   });
   const [operators, setOperators] = useState<UserData[]>([]);
-  const [trucks, setTrucks] = useState<TruckData[]>([]);
+  const [trucks, setTrucks] = useState<TruckType[]>([]);
   const [isAddTruckModalOpen, setIsAddTruckModalOpen] = useState(false);
   const [isAddOperatorModalOpen, setIsAddOperatorModalOpen] = useState(false);
   const [showFinished, setShowFinished] = useState(false);
@@ -123,29 +70,6 @@ export default function Home() {
     fetch();
   }, [refetch]);
 
-  const handleStatusToggle = async (
-    trackingNumber: string,
-    finished: boolean
-  ) => {
-    try {
-      await api.put(`/track/update-status/${trackingNumber}`, { finished });
-      setTrucks(
-        trucks.map((truck) =>
-          truck.trackingNumber === trackingNumber
-            ? { ...truck, finished }
-            : truck
-        )
-      );
-    } catch (error) {
-      console.error("Failed to update truck status:", error);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("userEmail");
-    navigate("/login");
-  };
-
   const handleUpdate = async (
     trackingNumber: string,
     checkpoint: string,
@@ -167,7 +91,7 @@ export default function Home() {
   };
 
   const getProgressPercentage = (currentStage: number) => {
-    return (currentStage + 1) * 10;
+    return (currentStage + 1) * 20;
   };
 
   const formatCheckpointName = (name: string) => {
@@ -400,9 +324,9 @@ export default function Home() {
                             {truck.finished
                               ? "Completed"
                               : `${
-                                  checkpoints[
-                                    Math.floor(truck.currentStage / 2)
-                                  ]
+                                  truck.stages[
+                                    Math.floor(truck.currentStage/2)
+                                  ]?.name
                                 }`}
                           </Badge>
                         </div>
@@ -416,7 +340,7 @@ export default function Home() {
                               className="h-2 w-16"
                             />
                             <span className="text-sm font-medium">
-                              {truck.currentStage}/{2 * checkpoints.length}
+                              {truck.currentStage}/{2 * truck.stages.length}
                             </span>
                           </div>
                         </div>
@@ -425,19 +349,19 @@ export default function Home() {
                     <CardContent>
                       {expandedSections[truck.trackingNumber] && (
                         <div className="mt-4 space-y-3 animate-in fade-in-50 slide-in-from-top-5 duration-300 overflow-y-scroll max-h-[80dvh]">
-                          {Object.entries(truck.timestamps).map(
+                          {Object.entries(truck.stages).map(
                             (checkpoint, index) => {
                               const isOperatorCheckpoint =
                                 user.role === "operator" &&
                                 user.checkPointAssigned.some(
                                   (checkPoint) =>
                                     checkPoint.toString() ==
-                                    checkpoint[0].toString()
+                                    checkpoint[1].name.toString()
                                 );
 
                               return (
                                 <div
-                                  key={checkpoint[0]}
+                                  key={checkpoint[1].name.toString()}
                                   className={cn(
                                     "border rounded-lg overflow-hidden relative",
                                     isOperatorCheckpoint
@@ -464,7 +388,7 @@ export default function Home() {
                                         )}
                                       >
                                         {formatCheckpointName(
-                                          checkpoint[0].toString()
+                                          checkpoint[1].name.toString()
                                         )}
                                       </h4>
                                     </div>
@@ -489,7 +413,7 @@ export default function Home() {
                                               onClick={() => {
                                                 handleUpdate(
                                                   truck.trackingNumber,
-                                                  checkpoint[0],
+                                                  checkpoint[1].name,
                                                   0,
                                                   true
                                                 );
@@ -529,7 +453,7 @@ export default function Home() {
                                               onClick={() => {
                                                 handleUpdate(
                                                   truck.trackingNumber,
-                                                  checkpoint[0],
+                                                  checkpoint[1].name,
                                                   0,
                                                   false
                                                 );
