@@ -5,21 +5,12 @@ import { BACKEND_URL } from "../constants";
 import api from "../utils/api";
 import { toast } from "sonner";
 
-export enum CheckPoints {
-  entry_gate,
-  front_office,
-  weigh_bridge,
-  qc,
-  material_handling,
-  none,
-}
-
 export interface UserData {
   email: string;
   name: string;
   password: string;
   role: string;
-  checkPointAssigned: [CheckPoints];
+  checkPointAssigned: [string];
 }
 
 export default function Login() {

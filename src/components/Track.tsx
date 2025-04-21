@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import api from "../utils/api";
 import { Button } from "./ui/button";
 import { getUserDetails } from "@/utils/getuserDetails";
-import { CheckPoints, UserData } from "./Login";
+import { UserData } from "./Login";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 
@@ -37,7 +37,7 @@ export default function Track() {
     name: "",
     password: "",
     role: "",
-    checkPointAssigned: [CheckPoints.none],
+    checkPointAssigned: ["none"],
   });
   const [isAddTruckModalOpen, setIsAddTruckModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -68,23 +68,13 @@ export default function Track() {
         (filterStatus === "in_progress" && !truck.finished)) &&
       truck.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const checkpoints = [
-    "entry_gate",
-    "front_office",
-    "weigh_bridge",
-    "qc",
-    "material_handling",
-    "weigh_bridge_return",
-    "front_office_return",
-    "entry_gate_return",
-  ];
-  const averageTimeAtCheckpoints = (trucks: any) => {
-    const averages = checkpoints.map((checkpoint) => {
+  const averageTimeAtStages = (trucks: any) => {
+    const averages = checkpointNames.map((_, index) => {
       const times = trucks.map((truck: any) => {
-        const timestamp = truck.timestamps[checkpoint];
-        if (timestamp && timestamp.start && timestamp.end) {
-          const start = new Date(timestamp.start);
-          const end = new Date(timestamp.end);
+        const stage = truck.stages.find((s) => s.stageNumber === index);
+        if (stage && stage.start && stage.end) {
+          const start = new Date(stage.start);
+          const end = new Date(stage.end);
           if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
             return (end.getTime() - start.getTime()) / 1000; // convert to seconds
           }
@@ -259,7 +249,7 @@ export default function Track() {
                         className="h-2 w-16"
                       />
                       <span className="text-sm font-medium">
-                        {truck.currentStage}/{2 * checkpoints.length}
+                        {truck.currentStage}/{2 * truck.length}
                       </span>
                     </div>
                   </div>
@@ -286,71 +276,69 @@ export default function Track() {
 
                 {selectedTruck === truck.trackingNumber && (
                   <div className="mt-4 space-y-3 animate-in fade-in-50 slide-in-from-top-5 duration-300">
-                    {checkpoints?.map((checkpoint: any, index: any) => {
-                      const timestamps = truck.timestamps[checkpoint];
-                      console.log(timestamps);
-                      const lastTimestamp = timestamps[0];
-                      const isCurrentStage = truck.currentStage / 2 === index;
-                      const hasCompleted = index < truck.currentStage / 2;
+                    {checkpointNames.map(
+                      (checkpoint: string, index: number) => {
+                        const stage = truck.stages.find(
+                          (s) => s.stageNumber === index
+                        );
+                        const isCurrentStage = truck.currentStage === index;
+                        const hasCompleted = index < truck.currentStage;
 
-                      return (
-                        <div
-                          key={checkpoint}
-                          className={cn(
-                            "p-3 rounded-lg border transition-all",
-                            isCurrentStage
-                              ? "bg-blue-50 border-blue-200 shadow-sm"
-                              : hasCompleted
-                              ? "bg-green-50 border-green-200"
-                              : "bg-gray-50 border-gray-200"
-                          )}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium capitalize">
-                              {checkpoint.replace(/_/g, " ")}
-                            </span>
-                            {isCurrentStage && (
-                              <span className="text-blue-600 animate-pulse">
-                                <Truck className="h-4 w-4" />
-                              </span>
+                        return (
+                          <div
+                            key={checkpoint}
+                            className={cn(
+                              "p-3 rounded-lg border transition-all",
+                              isCurrentStage
+                                ? "bg-blue-50 border-blue-200 shadow-sm"
+                                : hasCompleted
+                                ? "bg-green-50 border-green-200"
+                                : "bg-gray-50 border-gray-200"
                             )}
-                            {hasCompleted && (
-                              <span className="text-green-600">
-                                <CheckCircle className="h-4 w-4" />
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium capitalize">
+                                {checkpoint.replace(/_/g, " ")}
                               </span>
+                              {isCurrentStage && (
+                                <span className="text-blue-600 animate-pulse">
+                                  <Truck className="h-4 w-4" />
+                                </span>
+                              )}
+                              {hasCompleted && (
+                                <span className="text-green-600">
+                                  <CheckCircle className="h-4 w-4" />
+                                </span>
+                              )}
+                            </div>
+                            {stage && (
+                              <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                <div>
+                                  <p className="font-medium text-gray-700">
+                                    Start:
+                                  </p>
+                                  <p>
+                                    {stage.start
+                                      ? new Date(stage.start).toLocaleString()
+                                      : "Pending"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="font-medium text-gray-700">
+                                    End:
+                                  </p>
+                                  <p>
+                                    {stage.end
+                                      ? new Date(stage.end).toLocaleString()
+                                      : "Pending"}
+                                  </p>
+                                </div>
+                              </div>
                             )}
                           </div>
-                          {lastTimestamp && (
-                            <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-                              <div>
-                                <p className="font-medium text-gray-700">
-                                  Start:
-                                </p>
-                                <p>
-                                  {lastTimestamp.start
-                                    ? new Date(
-                                        lastTimestamp.start
-                                      ).toLocaleString()
-                                    : "Pending"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-700">
-                                  End:
-                                </p>
-                                <p>
-                                  {lastTimestamp.end
-                                    ? new Date(
-                                        lastTimestamp.end
-                                      ).toLocaleString()
-                                    : "Pending"}
-                                </p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                        );
+                      }
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -369,7 +357,7 @@ export default function Track() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {averageTimeAtCheckpoints(trucks).map((avg, index) => {
+            {averageTimeAtStages(trucks).map((avg, index) => {
               const checkpoint = checkpointNames[index];
               const formattedTime = isNaN(avg) ? "N/A" : Math.round(avg);
 
