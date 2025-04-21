@@ -26,8 +26,23 @@ import { UserData } from "./Login";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 
+interface TruckStage {
+  name: string;
+  stageNumber: number;
+  start: Date | null;
+  end: Date | null;
+}
+
+interface TruckType {
+  currentStage: number;
+  finished: boolean;
+  trackingNumber: string;
+  details: Record<string, any>;
+  stages: TruckStage[];
+}
+
 export default function Track() {
-  const [trucks, setTrucks] = useState([]);
+  const [trucks, setTrucks] = useState<TruckType[]>([]);
   const [showFinished, setShowFinished] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTruck, setSelectedTruck] = useState<string | null>(null);
@@ -88,14 +103,7 @@ export default function Track() {
   };
 
   const checkpointNames = [
-    "Entry Gate",
-    "Front Office",
-    "Weigh Bridge",
-    "Quality Control",
-    "Material Handling",
-    "Weigh Bridge Return",
-    "Front Office Return",
-    "Entry Gate Return",
+    ...new Set(trucks.flatMap((truck) => Object.keys(truck.stages))),
   ];
 
   const getProgressPercentage = (currentStage: number) => {
