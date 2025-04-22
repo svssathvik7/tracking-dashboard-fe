@@ -103,15 +103,13 @@ export default function Track() {
   };
 
   const checkpointNames = [
-    ...new Set(trucks.flatMap((truck) => Object.keys(truck.stages))),
+    ...new Set(
+      trucks.flatMap((truck) => truck.stages.map((stage) => stage.name))
+    ),
   ];
 
   const getProgressPercentage = (currentStage: number) => {
-    return (currentStage + 1) * 10;
-  };
-  const handleLogout = () => {
-    localStorage.removeItem("userEmail");
-    navigate("/login");
+    return (currentStage + 1) * 20;
   };
 
   useEffect(() => {
@@ -257,7 +255,7 @@ export default function Track() {
                         className="h-2 w-16"
                       />
                       <span className="text-sm font-medium">
-                        {truck.currentStage}/{2 * truck.length}
+                        {truck.currentStage}/{2 * truck.stages.length}
                       </span>
                     </div>
                   </div>
@@ -284,8 +282,8 @@ export default function Track() {
 
                 {selectedTruck === truck.trackingNumber && (
                   <div className="mt-4 space-y-3 animate-in fade-in-50 slide-in-from-top-5 duration-300">
-                    {checkpointNames.map(
-                      (checkpoint: string, index: number) => {
+                    {truck.stages.map(
+                      (checkpoint: TruckStage, index: number) => {
                         const stage = truck.stages.find(
                           (s) => s.stageNumber === index
                         );
@@ -294,7 +292,7 @@ export default function Track() {
 
                         return (
                           <div
-                            key={checkpoint}
+                            key={checkpoint.name}
                             className={cn(
                               "p-3 rounded-lg border transition-all",
                               isCurrentStage
@@ -306,7 +304,7 @@ export default function Track() {
                           >
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-sm font-medium capitalize">
-                                {checkpoint.replace(/_/g, " ")}
+                                {checkpoint.name.replace(/_/g, " ")}
                               </span>
                               {isCurrentStage && (
                                 <span className="text-blue-600 animate-pulse">
@@ -367,6 +365,7 @@ export default function Track() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {averageTimeAtStages(trucks).map((avg, index) => {
               const checkpoint = checkpointNames[index];
+              console.log(checkpointNames, checkpoint);
               const formattedTime = isNaN(avg) ? "N/A" : Math.round(avg);
 
               return (
