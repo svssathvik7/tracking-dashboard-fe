@@ -99,7 +99,7 @@ export default function Navbar({
                 "px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-primary/10",
                 isActive("/")
                   ? "bg-primary text-white"
-                  : "text-muted-foreground hover:text-primary"
+                  : "text-white hover:text-white"
               )}
               onClick={() => setIsMobileMenuOpen(false)}
             >

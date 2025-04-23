@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +12,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Truck, Loader2, Plus, X } from "lucide-react";
-import { Toaster } from "@/components/ui/sonner";
 import api from "../utils/api";
 import { toast } from "sonner";
 
@@ -30,32 +36,42 @@ interface DetailField {
 interface Stage {
   name: string;
   stageNumber: number;
+  start: Date | null;
+  end: Date | null;
+}
+
+interface Workflow {
+  workflowName: string;
+  stages: Stage[];
 }
 
 export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
   const [truckName, setTruckName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [details, setDetails] = useState<DetailField[]>([]);
-  const [stages, setStages] = useState<Stage[]>([]);
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetchWorkflows = async () => {
+      try {
+        const response = (await api.get("/workflows/get-all-workflows")).data;
+        setWorkflows(response.data);
+      } catch (error) {
+        console.error("Failed to fetch workflows:", error);
+        toast("Failed to load workflows");
+      }
+    };
+
+    if (isOpen) {
+      fetchWorkflows();
+    }
+  }, [isOpen]);
 
   const addDetailField = () => {
     setDetails([...details, { key: "", value: "" }]);
-  };
-
-  const addStage = () => {
-    const nextStageNumber =
-      stages.length > 0 ? stages[stages.length - 1].stageNumber + 1 : 0;
-    setStages([...stages, { name: "", stageNumber: nextStageNumber }]);
-  };
-
-  const removeStage = (index: number) => {
-    setStages(stages.filter((_, i) => i !== index));
-  };
-
-  const updateStageName = (index: number, name: string) => {
-    const newStages = [...stages];
-    newStages[index].name = name;
-    setStages(newStages);
   };
 
   const removeDetailField = (index: number) => {
@@ -72,9 +88,19 @@ export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
     setDetails(newDetails);
   };
 
+  const handleWorkflowSelect = (workflowName: string) => {
+    const workflow = workflows.find((w) => w.workflowName === workflowName);
+    setSelectedWorkflow(workflow || null);
+  };
+
   const handleSubmit = async () => {
     if (!truckName.trim()) {
       toast("Please enter a valid truck name");
+      return;
+    }
+
+    if (!selectedWorkflow) {
+      toast("Please select a workflow");
       return;
     }
 
@@ -90,12 +116,12 @@ export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
       await api.post(`/track/add-truck`, {
         trackingNumber: truckName,
         details: detailsObject,
-        stages: stages.map(({ name, stageNumber }) => ({ name, stageNumber })),
+        stages: selectedWorkflow.stages,
       });
       toast(`Truck ${truckName} has been created successfully`);
       setTruckName("");
       setDetails([]);
-      setStages([]);
+      setSelectedWorkflow(null);
       onClose();
     } catch (error) {
       console.error("Failed to create truck:", error);
@@ -130,6 +156,46 @@ export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
               autoComplete="off"
             />
           </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="workflow">Select Workflow</Label>
+            <Select onValueChange={handleWorkflowSelect}>
+              <SelectTrigger>
+                <SelectValue
+                  className="text-white"
+                  placeholder="Select a workflow"
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {workflows.map((workflow) => (
+                  <SelectItem
+                    key={workflow.workflowName}
+                    value={workflow.workflowName}
+                  >
+                    {workflow.workflowName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {selectedWorkflow && (
+            <div className="space-y-4">
+              <Label>Workflow Stages</Label>
+              <div className="space-y-2">
+                {selectedWorkflow.stages.map((stage, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 p-2 bg-secondary rounded-md"
+                  >
+                    <span className="text-sm font-medium">
+                      Stage {stage.stageNumber}: {stage.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -170,47 +236,6 @@ export default function AddTruckModal({ isOpen, onClose }: AddTruckModalProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => removeDetailField(index)}
-                  className="h-10 w-10"
-                >
-                  <X className="h-4 w-4 text-white" />
-                </Button>
-              </div>
-            ))}
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Stages</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addStage}
-                className="flex items-center gap-1 text-white hover:text-white"
-              >
-                <Plus className="h-4 w-4 text-white" />
-                Add Stage
-              </Button>
-            </div>
-
-            {stages.map((stage, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-[1fr,auto,auto] gap-2 items-start"
-              >
-                <Input
-                  placeholder="Stage Name"
-                  value={stage.name}
-                  onChange={(e) => updateStageName(index, e.target.value)}
-                />
-                <div className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-md">
-                  <span className="text-sm">Stage {stage.stageNumber}</span>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeStage(index)}
                   className="h-10 w-10"
                 >
                   <X className="h-4 w-4 text-white" />
