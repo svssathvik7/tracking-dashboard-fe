@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Truck, Users, CheckCircle, Clock } from "lucide-react";
+import { Plus, Truck, Users, CheckCircle, Clock, Workflow } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +21,174 @@ import { UserData } from "./Login";
 import Navbar from "./Navbar";
 import AddOperatorModal from "./AddOperatorModal";
 import { TruckType } from "./Track";
+import AddWorkflowModal from "./AddWorkflowModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Label } from "./ui/label";
+import { X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
+interface EditOperatorModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  operator: UserData | null;
+}
+
+function EditOperatorModal({
+  isOpen,
+  onClose,
+  operator,
+}: EditOperatorModalProps) {
+  const [selectedCheckpoints, setSelectedCheckpoints] = useState<string[]>(
+    operator?.checkPointAssigned || []
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [availableCheckpoints, setAvailableCheckpoints] = useState<string[]>(
+    []
+  );
+
+  useEffect(() => {
+    setSelectedCheckpoints(operator?.checkPointAssigned || []);
+  }, [operator]);
+
+  useEffect(() => {
+    const fetchCheckpoints = async () => {
+      try {
+        const response = await api.get("/track/get-all-checkpoints");
+        setAvailableCheckpoints(response.data.data || []);
+      } catch (error) {
+        console.error("Failed to fetch checkpoints:", error);
+        toast("Failed to load checkpoints");
+      }
+    };
+    if (isOpen) {
+      fetchCheckpoints();
+    }
+  }, [isOpen]);
+
+  const handleCheckpointToggle = (checkpoint: string) => {
+    console.log("Toggling checkpoint: ", checkpoint);
+    setSelectedCheckpoints((prev) =>
+      prev.includes(checkpoint)
+        ? prev.filter((cp) => cp !== checkpoint)
+        : [...prev, checkpoint]
+    );
+  };
+
+  const handleUpdate = async () => {
+    if (!operator) return;
+
+    setIsLoading(true);
+    try {
+      const response = await api.post("/users/update-operator", {
+        email: operator.email,
+        checkPointAssigned: selectedCheckpoints,
+      });
+
+      if (response.status === 200) {
+        toast("Operator updated successfully");
+        onClose();
+      }
+    } catch (error) {
+      console.error("Failed to update operator:", error);
+      toast("Failed to update operator");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatCheckpointName = (name: string) => {
+    if (name === "none") return "None";
+    return name
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Edit Operator
+          </DialogTitle>
+          <DialogDescription>Update {operator?.name} details</DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label>Currently Assigned Checkpoints</Label>
+            <div className="flex flex-wrap gap-2">
+              {selectedCheckpoints.map((checkpoint) => (
+                <Badge
+                  key={checkpoint}
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                  onClick={() => {
+                    console.log("toggleeeee");
+                    handleCheckpointToggle(checkpoint);
+                  }}
+                >
+                  {formatCheckpointName(checkpoint)}
+                  <X className="h-3 w-3 cursor-pointer hover:text-destructive" />
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label>Available Checkpoints</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {availableCheckpoints
+                .filter(
+                  (checkpoint) => !selectedCheckpoints.includes(checkpoint)
+                )
+                .map((checkpoint) => (
+                  <div
+                    key={checkpoint}
+                    onClick={() => handleCheckpointToggle(checkpoint)}
+                    className="flex items-center gap-2 p-2 bg-secondary/50 rounded-md cursor-pointer hover:bg-secondary"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="text-sm">
+                      {formatCheckpointName(checkpoint)}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button className="text-white" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUpdate}
+            disabled={isLoading}
+            className="bg-primary text-white"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              "Update"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function Home() {
   const [user, setUser] = useState<UserData>({
@@ -34,6 +202,11 @@ export default function Home() {
   const [trucks, setTrucks] = useState<TruckType[]>([]);
   const [isAddTruckModalOpen, setIsAddTruckModalOpen] = useState(false);
   const [isAddOperatorModalOpen, setIsAddOperatorModalOpen] = useState(false);
+  const [isAddWorkflowModalOpen, setIsAddWorkflowModalOpen] = useState(false);
+  const [selectedOperator, setSelectedOperator] = useState<UserData | null>(
+    null
+  );
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showFinished, setShowFinished] = useState(false);
   const [filterStatus, setFilterStatus] = useState<
     "all" | "in_progress" | "completed"
@@ -119,13 +292,22 @@ export default function Home() {
                   <Users className="h-5 w-5" />
                   Available Operators
                 </CardTitle>
-                <Button
-                  onClick={() => setIsAddOperatorModalOpen(true)}
-                  className="flex items-center gap-1 text-sm"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Operator
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setIsAddOperatorModalOpen(true)}
+                    className="flex items-center gap-1 text-sm"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Operator
+                  </Button>
+                  <Button
+                    onClick={() => setIsAddWorkflowModalOpen(true)}
+                    className="flex items-center gap-1 text-sm"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Workflow
+                  </Button>
+                </div>
               </div>
               <CardDescription>
                 Manage and monitor all operators in the system
@@ -159,7 +341,11 @@ export default function Home() {
                   {operators.map((operator) => (
                     <Card
                       key={operator.email}
-                      className="transition-all duration-300 hover:shadow-md"
+                      className="transition-all duration-300 hover:shadow-md cursor-pointer"
+                      onClick={() => {
+                        setSelectedOperator(operator);
+                        setIsEditModalOpen(true);
+                      }}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-4">
@@ -203,6 +389,15 @@ export default function Home() {
           <AddOperatorModal
             isOpen={isAddOperatorModalOpen}
             onClose={() => setIsAddOperatorModalOpen(false)}
+          />
+          <AddWorkflowModal
+            isOpen={isAddWorkflowModalOpen}
+            onClose={() => setIsAddWorkflowModalOpen(false)}
+          />
+          <EditOperatorModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            operator={selectedOperator}
           />
         </>
       )}
@@ -325,7 +520,7 @@ export default function Home() {
                               ? "Completed"
                               : `${
                                   truck.stages[
-                                    Math.floor(truck.currentStage/2)
+                                    Math.floor(truck.currentStage / 2)
                                   ]?.name
                                 }`}
                           </Badge>

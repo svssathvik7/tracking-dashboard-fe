@@ -55,11 +55,6 @@ export default function AddOperatorModal({
       return;
     }
 
-    if (formData.checkPointAssigned.length === 0) {
-      toast("Please select at least one checkpoint");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       await api.post("/users/create-operator", formData);
