@@ -288,7 +288,7 @@ export default function Track() {
                     {truck.stages.map(
                       (checkpoint: TruckStage, index: number) => {
                         const stage = truck.stages.find(
-                          (s) => s.stageNumber === index
+                          (s: any) => s.stageNumber === index + 1
                         );
                         const isCurrentStage = truck.currentStage === index;
                         const hasCompleted = index < truck.currentStage;
