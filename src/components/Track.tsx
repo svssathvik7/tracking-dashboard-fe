@@ -85,17 +85,20 @@ export default function Track() {
   );
   const averageTimeAtStages = (trucks: any) => {
     const averages = checkpointNames.map((_, index) => {
-      const times = trucks.map((truck: any) => {
-        const stage = truck.stages.find((s) => s.stageNumber === index);
-        if (stage && stage.start && stage.end) {
-          const start = new Date(stage.start);
-          const end = new Date(stage.end);
-          if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
-            return (end.getTime() - start.getTime()) / 1000; // convert to seconds
+      const times = trucks
+        .map((truck: any) => {
+          const stage = truck.stages[index]; // Changed from find to direct index access
+          if (stage && stage.start && stage.end) {
+            const start = new Date(stage.start);
+            const end = new Date(stage.end);
+            if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+              return (end.getTime() - start.getTime()) / 1000; // convert to seconds
+            }
           }
-        }
-        return 0;
-      });
+          return 0;
+        })
+        .filter((time) => time > 0); // Only consider non-zero times
+
       const total = times.reduce((acc: any, time: any) => acc + time, 0);
       return times.length > 0 ? total / times.length : 0;
     });
