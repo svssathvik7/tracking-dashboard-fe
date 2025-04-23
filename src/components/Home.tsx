@@ -292,7 +292,7 @@ export default function Home() {
                   <Users className="h-5 w-5" />
                   Available Operators
                 </CardTitle>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button
                     onClick={() => setIsAddOperatorModalOpen(true)}
                     className="flex items-center gap-1 text-sm"

@@ -366,6 +366,7 @@ export default function Track() {
             {averageTimeAtStages(trucks).map((avg, index) => {
               const checkpoint = checkpointNames[index];
               console.log(checkpointNames, checkpoint);
+              console.log(checkpoint, avg);
               const formattedTime = isNaN(avg) ? "N/A" : Math.round(avg);
 
               return (
