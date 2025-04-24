@@ -22,6 +22,7 @@ interface AddWorkflowModalProps {
 }
 
 interface Stage {
+  id: string;
   name: string;
   stageNumber: number;
   start: Date | null;
@@ -40,6 +41,7 @@ export default function AddWorkflowModal({
     setStages([
       ...stages,
       {
+        id: "",
         name: "",
         stageNumber: stages.length + 1,
         start: null,
@@ -60,6 +62,7 @@ export default function AddWorkflowModal({
   const updateStageName = (index: number, name: string) => {
     const newStages = [...stages];
     newStages[index].name = name;
+    newStages[index].id = name + newStages[index].stageNumber;
     setStages(newStages);
   };
 

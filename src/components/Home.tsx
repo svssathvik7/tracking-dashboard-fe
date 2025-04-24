@@ -263,8 +263,8 @@ export default function Home() {
     }
   };
 
-  const getProgressPercentage = (currentStage: number) => {
-    return (currentStage + 1) * 20;
+  const getProgressPercentage = (currentStage: number, totalStages: number) => {
+    return (currentStage / totalStages) * 100;
   };
 
   const formatCheckpointName = (name: string) => {
@@ -531,7 +531,10 @@ export default function Home() {
                           </p>
                           <div className="flex items-center gap-2">
                             <Progress
-                              value={getProgressPercentage(truck.currentStage)}
+                              value={getProgressPercentage(
+                                truck.currentStage,
+                                truck.stages.length * 2
+                              )}
                               className="h-2 w-16"
                             />
                             <span className="text-sm font-medium">
@@ -608,7 +611,7 @@ export default function Home() {
                                               onClick={() => {
                                                 handleUpdate(
                                                   truck.trackingNumber,
-                                                  checkpoint[1].name,
+                                                  checkpoint[1].id,
                                                   0,
                                                   true
                                                 );
@@ -648,7 +651,7 @@ export default function Home() {
                                               onClick={() => {
                                                 handleUpdate(
                                                   truck.trackingNumber,
-                                                  checkpoint[1].name,
+                                                  checkpoint[1].id,
                                                   0,
                                                   false
                                                 );

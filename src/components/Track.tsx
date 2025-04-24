@@ -27,6 +27,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 
 export interface TruckStage {
+  id: string;
   name: string;
   stageNumber: number;
   start: Date | null;
@@ -111,8 +112,8 @@ export default function Track() {
     ),
   ];
 
-  const getProgressPercentage = (currentStage: number) => {
-    return (currentStage + 1) * 20;
+  const getProgressPercentage = (currentStage: number, totalStages: number) => {
+    return (currentStage / totalStages) * 100;
   };
 
   useEffect(() => {
@@ -224,7 +225,7 @@ export default function Track() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {filteredTrucks.map((truck: any) => (
+          {filteredTrucks.map((truck: TruckType) => (
             <Card
               key={truck.trackingNumber}
               className={cn(
@@ -254,7 +255,10 @@ export default function Track() {
                     <p className="text-sm text-muted-foreground">Progress</p>
                     <div className="flex items-center gap-2">
                       <Progress
-                        value={getProgressPercentage(truck.currentStage)}
+                        value={getProgressPercentage(
+                          truck.currentStage,
+                          truck.stages.length * 2
+                        )}
                         className="h-2 w-16"
                       />
                       <span className="text-sm font-medium">
@@ -295,7 +299,7 @@ export default function Track() {
 
                         return (
                           <div
-                            key={checkpoint.name}
+                            key={checkpoint.id}
                             className={cn(
                               "p-3 rounded-lg border transition-all",
                               isCurrentStage
